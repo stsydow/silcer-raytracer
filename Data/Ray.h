@@ -11,13 +11,18 @@
 #include "Vector.h"
 #include "Coordinate.h"
 #include "Triangle.h"
+#include "../Graphics/OffModel.h"
 class Ray {
 public:
 	Ray();
 	virtual ~Ray();
 	Coordinate origin;
 	Vector direction;
-	int intersect(const Triangle &T, Coordinate &I) const;
+	Coordinate hitpoint;
+	double length;
+	const Triangle *surface;
+	int intersect(const Triangle &T);
+	bool intersect(const OffModel &M);
 };
 
 #endif /* RAY_H_ */

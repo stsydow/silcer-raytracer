@@ -24,6 +24,7 @@ public:
 	Triangle& operator=(const Triangle& value);
 	Vector faceNormal;
 	Vertex* v[3];
+	Vector a, b;
 };
 
 #endif /* TRIANGLE_H_ */

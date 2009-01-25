@@ -143,8 +143,8 @@ int dataPainter(void *p)
 
 
 		TransformGroup modelView;
-		modelView.transformation[13] = -25;
-		modelView.transformation[14] = 100;
+		modelView.transformation[13] = -0.5;
+		modelView.transformation[14] = 2;
 		OffModel model("meshes/bunnysimple.off");
 		RayTracer tracer(model);
 		modelView.addObj(&model);
@@ -155,7 +155,7 @@ int dataPainter(void *p)
 		glEnable (GL_POINT_SMOOTH);	// Antialiasing fuer Punkte einschalten
 		glEnable (GL_LINE_SMOOTH);	// Antialiasing fuer Linien einschalten
 		Display.drawEverything();
-
+		tracer.render();
 		long ticks = SDL_GetTicks();
 		int i = 0;
 		while(!quit)
@@ -174,7 +174,7 @@ int dataPainter(void *p)
 			Display.drawEverything();
 			SDL_PumpEvents();
 			SDL_Delay(1);
-			tracer.render();
+
 		}
 		SDL_WaitThread(events, NULL);
 	}

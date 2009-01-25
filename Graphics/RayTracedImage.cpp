@@ -8,11 +8,12 @@
 #include "RayTracedImage.h"
 #include <string>
 
-RayTracedImage::RayTracedImage(int width, int height):
-	height(height),
-	width(width)
+RayTracedImage::RayTracedImage(int width, int height, double pixelSize):
+	height(height/pixelSize),
+	width(width/pixelSize),
+	pixelSize(pixelSize)
 {
-	size = height * width;
+	size = this->height * this->width;
 	pixel = new GLubyte[size*3];
 	memset(pixel,0, sizeof(GLubyte)* 3*size);
 }
@@ -24,13 +25,13 @@ RayTracedImage::~RayTracedImage() {
 void RayTracedImage::draw()
 {
 	if (enabled){
-		glPointSize(2);
+		glPointSize(pixelSize/2);
 		glBegin(GL_POINTS);
 		for (int i = 0; i < width; ++i) {
 			for (int j = 0; j < height; ++j) {
 
 				glColor3ubv(pixel + 3*(j*width + i));
-				glVertex2d(i*2, (height-j)*2);
+				glVertex2d(i*pixelSize, (height-j)*pixelSize);
 			}
 		}
 		glEnd();

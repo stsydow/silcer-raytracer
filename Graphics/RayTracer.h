@@ -17,8 +17,11 @@ public:
 	virtual ~RayTracer();
 	void render();
 	const OffModel &model;
+	int width, height;
+	double pixelSize;
 	RayTraceCamera camera;
 	RayTracedImage image;
+
 };
 
 #endif /* RAYTRACER_H_ */

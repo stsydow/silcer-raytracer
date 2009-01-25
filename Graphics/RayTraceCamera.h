@@ -17,15 +17,15 @@ class RayTraceCamera:
 	friend class RayTracer;
 
 public:
-	RayTraceCamera(int width, int height);
+	RayTraceCamera(int width, int height, double pixelSize);
 	virtual ~RayTraceCamera();
 	virtual void draw();
-	void refresh();
+	void updateView();
 
 protected:
-	Coordinate offset;
 	Ray *pixelRays;
 	int height, width, size;
+	double pixelSize;
 	bool record;
 	int factor;
 };

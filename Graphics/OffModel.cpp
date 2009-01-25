@@ -37,16 +37,22 @@ void OffModel::draw()
 		if(doLighting) glEnable(GL_LIGHTING);
 		if(showTexture)glEnable(GL_TEXTURE_2D);
 		glBegin(GL_TRIANGLES);
+		Vertex * v;
 		for (int i = 0; i < numTriangles;  i++) {
-				if(showTexture)glTexCoord2fv(triangles[i].v[0]->textureCoord);
-				glNormal3dv(triangles[i].v[0]->normal);
-				glVertex3dv(triangles[i].v[0]->position);
-				if(showTexture)glTexCoord2fv(triangles[i].v[1]->textureCoord);
-				glNormal3dv(triangles[i].v[1]->normal);
-				glVertex3dv(triangles[i].v[1]->position);
-				if(showTexture)glTexCoord2fv(triangles[i].v[2]->textureCoord);
-				glNormal3dv(triangles[i].v[2]->normal);
-				glVertex3dv(triangles[i].v[2]->position);
+				v = triangles[i].v[0];
+				if(showTexture)glTexCoord2fv(v->textureCoord);
+				glNormal3dv(v->normal);
+				glVertex3dv(v->position);
+
+				v = triangles[i].v[1];
+				if(showTexture)glTexCoord2fv(v->textureCoord);
+				glNormal3dv(v->normal);
+				glVertex3dv(v->position);
+
+				v = triangles[i].v[2];
+				if(showTexture)glTexCoord2fv(v->textureCoord);
+				glNormal3dv(v->normal);
+				glVertex3dv(v->position);
 			}
 		glEnd();
 		if(showTexture)glDisable(GL_TEXTURE_2D);
@@ -127,9 +133,9 @@ void OffModel::readOff(char* filename) {
 
 	for(int i = 0; i < numVertices; i++){
 		Coordinate &p = vertices[i].position;
-		p[0] = p[0] * (50/r);
-		p[1] = p[1] * (50/r);
-		p[2] = p[2] * (50/r);
+		p[0] = p[0] * (1/r);
+		p[1] = p[1] * (1/r);
+		p[2] = p[2] * (1/r);
 	}
 }
 

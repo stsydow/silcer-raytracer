@@ -21,8 +21,8 @@ Triangle::Triangle(Vertex* v0, Vertex* v1, Vertex* v2) {
 Triangle::~Triangle() {}
 
 void Triangle::computeNormal(){
-		Vector a = v[0]->position - v[1]->position;
-		Vector b = v[2]->position - v[1]->position;
+		a = v[0]->position - v[1]->position;
+		b = v[2]->position - v[1]->position;
 
 	   faceNormal = a.times(b).normalize();
 }

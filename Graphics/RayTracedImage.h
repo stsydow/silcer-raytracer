@@ -14,11 +14,12 @@ class RayTracedImage:
 
 	friend class RayTracer;
 public:
-	RayTracedImage(int width, int height);
+	RayTracedImage(int width, int height, double pixelSize);
 	virtual ~RayTracedImage();
 	virtual void draw();
 protected:
 	int height, width, size;
+	double pixelSize;
 	GLubyte *pixel;
 };
 

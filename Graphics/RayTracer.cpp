@@ -9,8 +9,11 @@
 
 RayTracer::RayTracer(const OffModel &model):
 	model(model),
-	camera(1280/28,800/28),
-	image(1280/28,800/28)
+	width(1280),
+	height(800),
+	pixelSize(16),
+	camera(width,height,pixelSize),
+	image(width,height,pixelSize)
 {
 }
 
@@ -20,14 +23,9 @@ RayTracer::~RayTracer() {
 
 void RayTracer::render(){
 
-	Coordinate intersection;
-	for(int i =0 ; i < (1280/28*800/28); i++){
-		Ray &r = camera.pixelRays[i];
-		for(int j =0 ; j < model.numTriangles; j++){
-			if(r.intersect(model.triangles[j], intersection) == 1) {
-				image.pixel[3*i] = 0xFF;
-				break;
-			}
+	for(int i =0 ; i < image.size; i++){
+		if(camera.pixelRays[i].intersect(model)) {
+			image.pixel[3*i] = 0xFF;
 		}
 	}
 }
