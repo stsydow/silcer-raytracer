@@ -226,3 +226,34 @@ const double* Matrix::column(int id) const{
 Matrix::operator const double *const() const{
 	return M;
 }
+
+void Matrix::rotate(double alpha, Vector axis){
+
+	Matrix tmp;
+	double s = sin(alpha);
+	double c = cos(alpha);
+	double t = (1-cos(alpha));
+	tmp[0] = (t*axis[0]*axis[0])+c;
+	tmp[1] = (t*axis[0]*axis[1])-(s*axis[2]);
+	tmp[2] = (t*axis[0]*axis[2])+(s*axis[1]);
+	tmp[4] = (t*axis[0]*axis[1])+(s*axis[2]);
+	tmp[5] = (t*axis[1]*axis[1])+c;
+	tmp[6] = (t*axis[1]*axis[2])-(s*axis[0]);
+	tmp[8] = (t*axis[0]*axis[2])-(s*axis[1]);
+	tmp[9] = (t*axis[1]*axis[2])+(s*axis[0]);
+	tmp[10] = (t*axis[2]*axis[2])+c;
+	//matrix an aktuelle ranmultiplizieren.
+
+		Matrix result;
+		for (int i = 0; i < 4; ++i)
+		{
+			for (int j = 0; j < 4; ++j)
+			{
+				result[i + 4*j] = 0.0f;
+				// Calculate the dot product of ith row of A and jth column of B
+				for (int k = 0; k < 4; ++k)
+					result[i + 4*j] += M[i + 4*k] * tmp[k + 4*j];
+			}
+		}
+		memcpy(M,result,sizeof(double) *12);
+}

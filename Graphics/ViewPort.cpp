@@ -1,10 +1,11 @@
 #include "ViewPort.h"
 
-ViewPort::ViewPort(void)
+ViewPort::ViewPort(void):
+	view(NULL)
 {
 }
 ViewPort::ViewPort(int x, int y, int width, int height):
-x(x), y(y), height(height), width(width), mode3D(false)
+x(x), y(y), height(height), width(width), mode3D(false),view(NULL)
 {
 }
 ViewPort::~ViewPort(void)

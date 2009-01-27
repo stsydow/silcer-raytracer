@@ -36,7 +36,9 @@ void RayTraceCamera::draw()
 		glGetDoublev( GL_MODELVIEW_MATRIX, modelview );
 		glGetDoublev( GL_PROJECTION_MATRIX, projection );
 		glGetIntegerv( GL_VIEWPORT, viewport );
-
+		float vec[4];
+		glGetLightfv(GL_LIGHT0, GL_POSITION, vec);
+		lightDirection = Vector(vec[0], vec[1], vec[2]);
 		Coordinate offset;
 		for (int i = 0; i < width; ++i) {
 			for (int j = 0; j < height; ++j) {
@@ -50,18 +52,28 @@ void RayTraceCamera::draw()
 		record = false;
 	}else{
 		glPointSize(pixelSize);
+		glBegin(GL_LINES);
+		for (int i = 0; i < width; ++i) {
+			for (int j = 0; j < height; ++j) {
+
+				if(pixelRays[j*width + i].length < 1e40)
+				{
+					glColor4f(0,0,1,0.5);
+					glVertex3dv(pixelRays[j*width + i].hitpoint);
+					glVertex3dv(pixelRays[j*width + i].hitpoint+ pixelRays[j*width + i].normal*-0.02);
+				}
+			}
+		}
+		glEnd();
 		glBegin(GL_POINTS);
 		for (int i = 0; i < width; ++i) {
 			for (int j = 0; j < height; ++j) {
 
 				if(pixelRays[j*width + i].length < 1e40)
 				{
-					glColor4f(0,0,1,0.7);
+					float color = -pixelRays[j*width + i].normal*lightDirection;
+					glColor4f(color, color, color, 0.6);
 					glVertex3dv(pixelRays[j*width + i].hitpoint);
-				}
-				else{
-					glColor4f(0,1,0,0.7);
-					glVertex3dv(pixelRays[j*width + i].origin + pixelRays[j*width + i].direction);
 				}
 			}
 		}

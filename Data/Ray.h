@@ -18,6 +18,7 @@ public:
 	virtual ~Ray();
 	Coordinate origin;
 	Vector direction;
+	Vector normal;
 	Coordinate hitpoint;
 	double length;
 	const Triangle *surface;

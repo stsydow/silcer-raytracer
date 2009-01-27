@@ -31,6 +31,7 @@ public:
 	void setOnes();
 	const Matrix invert() const;
 	operator const double *const() const;
+	void rotate(double alpha, Vector axis);
 private:
 	double M[16];
 	double* column(int);

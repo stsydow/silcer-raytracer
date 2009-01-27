@@ -12,7 +12,7 @@
 #include "../Data/constants.h"
 
 OffModel::OffModel(char* filename):
-	showNormals(OFF),
+	showNormals(ON),
 	showTexture(OFF),
 	doLighting(ON)
 {
@@ -33,7 +33,7 @@ void OffModel::draw()
 		GLfloat _directionalVec[] = { 0.0, 0.0, 1.0, 0.0 };
 		glLightfv(GL_LIGHT0, GL_POSITION, _directionalVec);
 
-		glColor4f(1,1,1,1);
+		glColor4f(1,1,1,0.7);
 		if(doLighting) glEnable(GL_LIGHTING);
 		if(showTexture)glEnable(GL_TEXTURE_2D);
 		glBegin(GL_TRIANGLES);
@@ -60,10 +60,11 @@ void OffModel::draw()
 	    if(doLighting) glDisable(GL_LIGHTING);
 
 	    if(showNormals){
+	    	glColor4f(1,0,0,0.5);
 			glBegin(GL_LINES);
 			for (int i = 0; i < numVertices;  i++) {
 					glVertex3dv(vertices[i].position);
-					glVertex3dv(vertices[i].position + vertices[i].normal );
+					glVertex3dv(vertices[i].position + vertices[i].normal*-0.03 );
 				}
 			glEnd();
 	    }
@@ -97,6 +98,36 @@ void OffModel::readOff(char* filename) {
 				vertices[i]  = Vertex(x,y,z);
 			}
 
+			Vector mean;
+			mean.zero();
+			Coordinate center;
+			center.zero();
+			for(int i = 0; i < numVertices; i++){
+				mean += (vertices[i].position -center)* (1/numVertices);
+			}
+
+			Vector minV(mean), maxV(mean);
+
+			for(int i = 0; i < numVertices; i++){
+				minV[0] = min((minV[0]),(vertices[i].position[0]));
+				minV[1] = min((minV[1]),(vertices[i].position[1]));
+				minV[2] = min((minV[2]),(vertices[i].position[2]));
+				maxV[0] = max((maxV[0]),(vertices[i].position[0]));
+				maxV[1] = max((maxV[1]),(vertices[i].position[1]));
+				maxV[2] = max((maxV[2]),(vertices[i].position[2]));
+			}
+
+			double m_1 = minV.abs();
+			double m_2 = maxV.abs();
+			double r = max(m_2, m_1);
+
+			for(int i = 0; i < numVertices; i++){
+				Coordinate &p = vertices[i].position;
+				p[0] = p[0] * (1/r);
+				p[1] = p[1] * (1/r);
+				p[2] = p[2] * (1/r);
+			}
+
 			int n, k,l,m;
 			for(int i=0 ; i <numTriangles; i++){
 				fscanf(file, "%d %d %d %d", &n, &k, &l, &m);
@@ -107,35 +138,8 @@ void OffModel::readOff(char* filename) {
 		}
 	}
 
-	Vector mean;
-	mean.zero();
-	Coordinate center;
-	center.zero();
 	for(int i = 0; i < numVertices; i++){
 		vertices[i].calculateNormal();
-		mean += (vertices[i].position -center)* (1/numVertices);
-	}
-
-	Vector minV(mean), maxV(mean);
-
-	for(int i = 0; i < numVertices; i++){
-		minV[0] = min((minV[0]),(vertices[i].position[0]));
-		minV[1] = min((minV[1]),(vertices[i].position[1]));
-		minV[2] = min((minV[2]),(vertices[i].position[2]));
-		maxV[0] = max((maxV[0]),(vertices[i].position[0]));
-		maxV[1] = max((maxV[1]),(vertices[i].position[1]));
-		maxV[2] = max((maxV[2]),(vertices[i].position[2]));
-	}
-
-	double m_1 = minV.abs();
-	double m_2 = maxV.abs();
-	double r = max(m_2, m_1);
-
-	for(int i = 0; i < numVertices; i++){
-		Coordinate &p = vertices[i].position;
-		p[0] = p[0] * (1/r);
-		p[1] = p[1] * (1/r);
-		p[2] = p[2] * (1/r);
 	}
 }
 

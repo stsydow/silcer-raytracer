@@ -28,6 +28,8 @@ protected:
 	double pixelSize;
 	bool record;
 	int factor;
+	Coordinate lightPosition;
+	Vector lightDirection;
 };
 
 

@@ -25,7 +25,7 @@ void RayTracer::render(){
 
 	for(int i =0 ; i < image.size; i++){
 		if(camera.pixelRays[i].intersect(model)) {
-			image.pixel[3*i] = 0xFF;
+			image.pixel[3*i] = 255* (-camera.pixelRays[i].normal*camera.lightDirection);
 		}
 	}
 }

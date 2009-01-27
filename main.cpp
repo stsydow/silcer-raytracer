@@ -8,19 +8,23 @@
 #include "Graphics/OffModel.h"
 #include "Graphics/RayTracer.h"
 #include <math.h>
+#include "Data/constants.h"
 #include <stdexcept>
 #include <string>
 #include <sstream>
 #include <SDL/SDL_thread.h>
+#include "Graphics/Mouse.h"
 
 using namespace std;
-
+Mouse mouse;
 bool quit = false;
 SDL_mutex* consoleMtx;
 Perspective *view;
 char messageBuffer[100];
 char *messageBufferEnd = messageBuffer;
 
+Vector y_Axes(0,1,0);
+Vector z_Axes(0,0,1);
 
 string IntToString(int i)
 {
@@ -38,6 +42,15 @@ void interpretConsole(){
 	if(!strcmp(cmd, "posy")) view->setFocusPoint(e_Y, value);
 	if(!strcmp(cmd, "posz")) view->setFocusPoint(e_Z, value);
 }
+
+
+int renderScene(void *p)
+{
+	RayTracer *tracer = (RayTracer*)p;
+	tracer->render();
+	return 0;
+}
+
 int eventProcessor(void *p)
 {
 	SDL_Event *myEvent = new SDL_Event();
@@ -91,6 +104,18 @@ int eventProcessor(void *p)
 				}
 				break;
 			}
+			case SDL_MOUSEBUTTONDOWN:
+			{
+				mouse.update(*myEvent);
+			}
+			case SDL_MOUSEBUTTONUP:
+			{
+				mouse.update(*myEvent);
+			}
+			case SDL_MOUSEMOTION:
+			{
+				mouse.update(*myEvent);
+			}
 		}
 	}
 	delete(myEvent);
@@ -140,7 +165,8 @@ int dataPainter(void *p)
 		glEnable(GL_LIGHT0);
 		glEnable(GL_LIGHT_MODEL_LOCAL_VIEWER);
 		glShadeModel(GL_SMOOTH);
-
+		glEnable (GL_POINT_SMOOTH);	// Antialiasing fuer Punkte einschalten
+		glEnable (GL_LINE_SMOOTH);	// Antialiasing fuer Linien einschalten
 
 		TransformGroup modelView;
 		modelView.transformation[13] = -0.5;
@@ -150,19 +176,17 @@ int dataPainter(void *p)
 		modelView.addObj(&model);
 		modelView.addObj(&tracer.camera);
 		canvas.add(&modelView);
-		image.add(&tracer.image);
-
-		glEnable (GL_POINT_SMOOTH);	// Antialiasing fuer Punkte einschalten
-		glEnable (GL_LINE_SMOOTH);	// Antialiasing fuer Linien einschalten
 		Display.drawEverything();
-		tracer.render();
+		SDL_CreateThread(renderScene, &tracer);
+		//image.add(&tracer.image);
+
 		long ticks = SDL_GetTicks();
 		int i = 0;
 		while(!quit)
 		{
-			if((SDL_GetTicks() - ticks) > 1000)
+			if((SDL_GetTicks() - ticks) > 2000)
 			{
-				fps.setText("fps:" + IntToString(i));
+				fps.setText("fps:" + IntToString(i/2));
 				float r = i/300.0f;
 				fps.setColor(r ,0.2f,1 - r ,1.0f);
 				i = 0;
@@ -170,6 +194,12 @@ int dataPainter(void *p)
 			}
 			++i;
 
+			if(mouse.isClicked()){
+				int x, y;
+				mouse.getDelta(x,y);
+				modelView.transformation.rotate(x/30.0, y_Axes);
+				modelView.transformation.rotate(y/30.0, z_Axes);
+			}
 			console.setText(messageBuffer); //FIXME race condition?
 			Display.drawEverything();
 			SDL_PumpEvents();

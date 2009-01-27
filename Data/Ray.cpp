@@ -28,10 +28,10 @@ Ray::~Ray() {
 //             2 = are in the same plane
 int Ray::intersect(const Triangle &T)
 {
-	Coordinate &tOrigin =  T.v[0]->position;
-    Vector u = T.v[1]->position - tOrigin;
-    Vector v = T.v[2]->position - tOrigin;
-    Vector n = u.times(v);
+	Coordinate &tOrigin =  T.v[1]->position;
+    Vector u = T.a;
+    Vector v = T.b;
+    Vector n = T.faceNormal;
     Vector w0 = origin - tOrigin;
     float a = -(n*w0);
     float b = n*direction;
@@ -68,11 +68,14 @@ int Ray::intersect(const Triangle &T)
     if (t < 0.0 || (s + t) > 1.0)  // is outside T
         return 0;
 
-    if(length < w.abs()) return 0; // an other Triangle is in the way
+    double newLength = (intersection -origin).abs();
+    if(length < newLength){
+    	return 0; // an other Triangle is in the way
+    }
 
     hitpoint = intersection;
-    length = w.abs();
-
+    length = newLength;
+    normal = (T.v[1]->normal + ( T.v[0]->normal  - T.v[1]->normal ) *s + (T.v[2]->normal  -  T.v[1]->normal )*t).normalize();
     return 1;                      // I is in T
 }
 
