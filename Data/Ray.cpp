@@ -8,13 +8,15 @@
 #include "Ray.h"
 #include "constants.h"
 #include <math.h>
-
+#include "assert.h"
 #include <limits>
 const double dMax = std::numeric_limits<double>::max();
 
-Ray::Ray() {
-	// TODO Auto-generated constructor stub
-
+Ray::Ray():
+	length(dMax),
+	lightRay(NULL),
+	nextRay(NULL){
+	hitpoint.zero();
 }
 
 Ray::~Ray() {
@@ -28,7 +30,7 @@ Ray::~Ray() {
 //             2 = are in the same plane
 int Ray::intersect(const Triangle &T)
 {
-	Coordinate &tOrigin =  T.v[1]->position;
+	Coordinate &tOrigin =  T.v[0]->position;
     Vector u = T.a;
     Vector v = T.b;
     Vector n = T.faceNormal;
@@ -69,23 +71,64 @@ int Ray::intersect(const Triangle &T)
         return 0;
 
     double newLength = (intersection -origin).abs();
+
+    if(EPSILON*10000 > newLength){
+    	return 0; // an other Triangle is in the way
+    }
     if(length < newLength){
     	return 0; // an other Triangle is in the way
     }
 
     hitpoint = intersection;
     length = newLength;
-    normal = (T.v[1]->normal + ( T.v[0]->normal  - T.v[1]->normal ) *s + (T.v[2]->normal  -  T.v[1]->normal )*t).normalize();
+    normal = (T.v[0]->normal + ( T.v[1]->normal  - T.v[0]->normal ) *s + (T.v[2]->normal  -  T.v[0]->normal )*t).normalize();
     return 1;                      // I is in T
 }
 
-bool Ray::intersect(const OffModel &M)
+bool Ray::intersect(const OffModel &M, const Vector &lightDir, const Vector &color, int stage)
 {
 	bool result = false;
-	hitpoint.zero();
-	length = dMax;
 	for(int j =0 ; j < M.numTriangles; j++){
-		if(intersect(M.triangles[j]) == 1) result = true;
+		if(intersect(M.triangles[j]) == 1)	result = true;
+	}
+
+	if(!result){
+		{
+			incommingLight.zero();
+		}
+	}else{
+		double factor = -(normal* lightDir);
+		if(factor > EPSILON){
+			lightRay = new Ray();
+			lightRay->origin = hitpoint;
+			lightRay->direction = -lightDir;
+			bool lightBlocked = false;
+			for(int k =0 ; k < M.numTriangles; k++){
+				if(lightRay->intersect(M.triangles[k]) == 1){
+					lightBlocked = true;
+					break;
+				}
+			}
+			if(lightBlocked){
+				incommingLight = color*0.2;
+			}else{
+				double blinnTerm = (lightRay->direction - direction).normalize()* normal;;
+				if(blinnTerm < 0) blinnTerm = 0;
+				blinnTerm = pow(blinnTerm , 100);
+
+				incommingLight = color*(0.2 + 0.3 * factor + 1 * blinnTerm);
+			}
+
+		}else{
+			incommingLight = color*0.2;
+		}
+		if(stage < 3 && direction * normal <0 ){
+			nextRay = new Ray();
+			nextRay->origin = hitpoint;
+			nextRay->direction =  direction + normal * (normal*direction * -2);
+			nextRay->intersect(M, lightDir, color, ++stage);
+			incommingLight += (nextRay->incommingLight * 0.5);
+		}
 	}
 	return result;
 }

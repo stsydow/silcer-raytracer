@@ -12,6 +12,7 @@
 #include "Coordinate.h"
 #include "Triangle.h"
 #include "../Graphics/OffModel.h"
+class Ray;
 class Ray {
 public:
 	Ray();
@@ -23,7 +24,10 @@ public:
 	double length;
 	const Triangle *surface;
 	int intersect(const Triangle &T);
-	bool intersect(const OffModel &M);
+	bool intersect(const OffModel &M, const Vector &lightDir, const Vector &color, int stage);
+	Vector incommingLight;
+	Ray *lightRay;
+	Ray *nextRay;
 };
 
 #endif /* RAY_H_ */

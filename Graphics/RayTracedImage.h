@@ -20,7 +20,7 @@ public:
 protected:
 	int height, width, size;
 	double pixelSize;
-	GLubyte *pixel;
+	GLdouble *pixel;
 };
 
 #endif /* RAYTRACEDIMAGE_H_ */

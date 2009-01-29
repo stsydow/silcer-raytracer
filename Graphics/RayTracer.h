@@ -15,7 +15,7 @@ class RayTracer {
 public:
 	RayTracer(const OffModel &model);
 	virtual ~RayTracer();
-	void render();
+	void render(float start = 0, float end= 1);
 	const OffModel &model;
 	int width, height;
 	double pixelSize;

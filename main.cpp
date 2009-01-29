@@ -44,13 +44,19 @@ void interpretConsole(){
 }
 
 
-int renderScene(void *p)
+int renderSceneTop(void *p)
 {
 	RayTracer *tracer = (RayTracer*)p;
-	tracer->render();
+	tracer->render(0, 0.4);
 	return 0;
 }
 
+int renderSceneBottom(void *p)
+{
+	RayTracer *tracer = (RayTracer*)p;
+	tracer->render(0.4,1);
+	return 0;
+}
 int eventProcessor(void *p)
 {
 	SDL_Event *myEvent = new SDL_Event();
@@ -177,8 +183,9 @@ int dataPainter(void *p)
 		modelView.addObj(&tracer.camera);
 		canvas.add(&modelView);
 		Display.drawEverything();
-		SDL_CreateThread(renderScene, &tracer);
-		//image.add(&tracer.image);
+		SDL_CreateThread(renderSceneTop, &tracer);
+		SDL_CreateThread(renderSceneBottom, &tracer);
+		image.add(&tracer.image);
 
 		long ticks = SDL_GetTicks();
 		int i = 0;
@@ -203,7 +210,7 @@ int dataPainter(void *p)
 			console.setText(messageBuffer); //FIXME race condition?
 			Display.drawEverything();
 			SDL_PumpEvents();
-			SDL_Delay(1);
+			SDL_Delay(100);
 
 		}
 		SDL_WaitThread(events, NULL);

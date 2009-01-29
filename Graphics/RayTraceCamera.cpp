@@ -38,7 +38,7 @@ void RayTraceCamera::draw()
 		glGetIntegerv( GL_VIEWPORT, viewport );
 		float vec[4];
 		glGetLightfv(GL_LIGHT0, GL_POSITION, vec);
-		lightDirection = Vector(vec[0], vec[1], vec[2]);
+		lightDirection = Vector(-vec[0], -vec[1], vec[2]);
 		Coordinate offset;
 		for (int i = 0; i < width; ++i) {
 			for (int j = 0; j < height; ++j) {
@@ -53,30 +53,44 @@ void RayTraceCamera::draw()
 	}else{
 		glPointSize(pixelSize);
 		glBegin(GL_LINES);
+		Ray *current;
 		for (int i = 0; i < width; ++i) {
 			for (int j = 0; j < height; ++j) {
-
-				if(pixelRays[j*width + i].length < 1e40)
+				current = pixelRays + (j*width + i);
+				if(current->length < 1e40)
 				{
-					glColor4f(0,0,1,0.5);
-					glVertex3dv(pixelRays[j*width + i].hitpoint);
-					glVertex3dv(pixelRays[j*width + i].hitpoint+ pixelRays[j*width + i].normal*-0.02);
+//					glColor4f(0,0,1,0.5);
+//					if(current->nextRay&& current->nextRay->hitpoint.abs()> 0){
+//						glVertex3dv(current->hitpoint);
+//						glColor4f(0,1,0,0.5);
+//						glVertex3dv(current->nextRay->hitpoint);
+//						if(current->nextRay->nextRay&& current->nextRay->nextRay->hitpoint.abs()> 0){
+//							glVertex3dv(current->nextRay->hitpoint);
+//							glColor4f(1,0,0,0.5);
+//							glVertex3dv(current->nextRay->nextRay->hitpoint);
+//						}
+//					}
+//					if(current->lightRay && current->lightRay->hitpoint.abs()> 0){
+//						glVertex3dv(current->hitpoint);
+//						glVertex3dv(current->lightRay->hitpoint);
+//					}
 				}
 			}
 		}
 		glEnd();
-		glBegin(GL_POINTS);
-		for (int i = 0; i < width; ++i) {
-			for (int j = 0; j < height; ++j) {
-
-				if(pixelRays[j*width + i].length < 1e40)
-				{
-					float color = -pixelRays[j*width + i].normal*lightDirection;
-					glColor4f(color, color, color, 0.6);
-					glVertex3dv(pixelRays[j*width + i].hitpoint);
-				}
-			}
-		}
-		glEnd();
+//		glBegin(GL_POINTS);
+//		for (int i = 0; i < width; ++i) {
+//			for (int j = 0; j < height; ++j) {
+//				current = pixelRays + (j*width + i);
+//				if(current->length < 1e40)
+//				{
+//					//float color = -(current->normal*lightDirection);
+//					//glColor4f(color, color, color, 0.6);
+//					glColor3dv(current->incommingLight);
+//					glVertex3dv(current->hitpoint);
+//				}
+//			}
+//		}
+//		glEnd();
 	}
 }

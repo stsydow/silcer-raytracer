@@ -14,7 +14,7 @@ RayTracedImage::RayTracedImage(int width, int height, double pixelSize):
 	pixelSize(pixelSize)
 {
 	size = this->height * this->width;
-	pixel = new GLubyte[size*3];
+	pixel = new GLdouble[size*3];
 	memset(pixel,0, sizeof(GLubyte)* 3*size);
 }
 
@@ -25,12 +25,12 @@ RayTracedImage::~RayTracedImage() {
 void RayTracedImage::draw()
 {
 	if (enabled){
-		glPointSize(pixelSize/2);
+		glPointSize(pixelSize);
 		glBegin(GL_POINTS);
 		for (int i = 0; i < width; ++i) {
 			for (int j = 0; j < height; ++j) {
 
-				glColor3ubv(pixel + 3*(j*width + i));
+				glColor3dv(pixel + 3*(j*width + i));
 				glVertex2d(i*pixelSize, (height-j)*pixelSize);
 			}
 		}

@@ -12,7 +12,7 @@
 #include "../Data/constants.h"
 
 OffModel::OffModel(char* filename):
-	showNormals(ON),
+	showNormals(OFF),
 	showTexture(OFF),
 	doLighting(ON)
 {
@@ -30,7 +30,7 @@ void OffModel::draw()
 {
 	if (enabled){
 		glPushMatrix();
-		GLfloat _directionalVec[] = { 0.0, 0.0, 1.0, 0.0 };
+		GLfloat _directionalVec[] = { 0.0, 1.0, 0.0, 0.0 };
 		glLightfv(GL_LIGHT0, GL_POSITION, _directionalVec);
 
 		glColor4f(1,1,1,0.7);
@@ -64,7 +64,7 @@ void OffModel::draw()
 			glBegin(GL_LINES);
 			for (int i = 0; i < numVertices;  i++) {
 					glVertex3dv(vertices[i].position);
-					glVertex3dv(vertices[i].position + vertices[i].normal*-0.03 );
+					glVertex3dv(vertices[i].position + vertices[i].normal*0.03 );
 				}
 			glEnd();
 	    }
