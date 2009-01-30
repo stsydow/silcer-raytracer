@@ -25,6 +25,7 @@ public:
 	Vector faceNormal;
 	Vertex* v[3];
 	Vector a, b;
+	Coordinate min, max;
 };
 
 #endif /* TRIANGLE_H_ */

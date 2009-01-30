@@ -51,7 +51,8 @@ void RayTraceCamera::draw()
 		}
 		record = false;
 	}else{
-		glPointSize(pixelSize);
+		if(pixelSize > 1)glPointSize(pixelSize);
+		else glPointSize(1);
 		glBegin(GL_LINES);
 		Ray *current;
 		for (int i = 0; i < width; ++i) {
@@ -78,19 +79,19 @@ void RayTraceCamera::draw()
 			}
 		}
 		glEnd();
-//		glBegin(GL_POINTS);
-//		for (int i = 0; i < width; ++i) {
-//			for (int j = 0; j < height; ++j) {
-//				current = pixelRays + (j*width + i);
-//				if(current->length < 1e40)
-//				{
-//					//float color = -(current->normal*lightDirection);
-//					//glColor4f(color, color, color, 0.6);
-//					glColor3dv(current->incommingLight);
-//					glVertex3dv(current->hitpoint);
-//				}
-//			}
-//		}
-//		glEnd();
+		glBegin(GL_POINTS);
+		for (int i = 0; i < width; ++i) {
+			for (int j = 0; j < height; ++j) {
+				current = pixelRays + (j*width + i);
+				if(current->length < 1e40)
+				{
+					//float color = -(current->normal*lightDirection);
+					//glColor4f(color, color, color, 0.6);
+					glColor3dv(current->incommingLight);
+					glVertex3dv(current->hitpoint);
+				}
+			}
+		}
+		glEnd();
 	}
 }

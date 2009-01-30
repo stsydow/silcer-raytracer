@@ -38,22 +38,22 @@ void OffModel::draw()
 		if(showTexture)glEnable(GL_TEXTURE_2D);
 		glBegin(GL_TRIANGLES);
 		Vertex * v;
-		for (int i = 0; i < numTriangles;  i++) {
-				v = triangles[i].v[0];
-				if(showTexture)glTexCoord2fv(v->textureCoord);
-				glNormal3dv(v->normal);
-				glVertex3dv(v->position);
-
-				v = triangles[i].v[1];
-				if(showTexture)glTexCoord2fv(v->textureCoord);
-				glNormal3dv(v->normal);
-				glVertex3dv(v->position);
-
-				v = triangles[i].v[2];
-				if(showTexture)glTexCoord2fv(v->textureCoord);
-				glNormal3dv(v->normal);
-				glVertex3dv(v->position);
-			}
+//		for (int i = 0; i < numTriangles;  i++) {
+//				v = triangles[i].v[0];
+//				if(showTexture)glTexCoord2fv(v->textureCoord);
+//				glNormal3dv(v->normal);
+//				glVertex3dv(v->position);
+//
+//				v = triangles[i].v[1];
+//				if(showTexture)glTexCoord2fv(v->textureCoord);
+//				glNormal3dv(v->normal);
+//				glVertex3dv(v->position);
+//
+//				v = triangles[i].v[2];
+//				if(showTexture)glTexCoord2fv(v->textureCoord);
+//				glNormal3dv(v->normal);
+//				glVertex3dv(v->position);
+//			}
 		glEnd();
 		if(showTexture)glDisable(GL_TEXTURE_2D);
 

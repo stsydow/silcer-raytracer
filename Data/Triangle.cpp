@@ -21,10 +21,27 @@ Triangle::Triangle(Vertex* v0, Vertex* v1, Vertex* v2) {
 Triangle::~Triangle() {}
 
 void Triangle::computeNormal(){
-		a = v[1]->position - v[0]->position;
-		b = v[2]->position - v[0]->position;
+	a = v[1]->position - v[0]->position;
+	b = v[2]->position - v[0]->position;
 
-	   faceNormal = a.times(b).normalize();
+	faceNormal = a.times(b).normalize();
+	for(int i = 0; i < 3; i++){
+		if(a[i] > 0 && b[i] > 0){
+			min[i] = v[0]->position[i];
+			if(a[i] < b[i]){
+				max[i] = v[2]->position[i];
+			}else{
+				max[i] = v[1]->position[i];
+			}
+		}else{
+			max[i] = v[0]->position[i];
+			if(a[i] < b[i]){
+				min[i] = v[1]->position[i];
+			}else{
+				min[i] = v[2]->position[i];
+			}
+		}
+	}
 }
 
 Triangle& Triangle::operator=(const Triangle& value){

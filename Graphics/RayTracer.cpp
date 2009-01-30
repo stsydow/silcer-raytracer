@@ -11,7 +11,7 @@ RayTracer::RayTracer(const OffModel &model):
 	model(model),
 	width(1280),
 	height(800),
-	pixelSize(2),
+	pixelSize(4),
 	camera(width,height,pixelSize),
 	image(width,height,pixelSize)
 {

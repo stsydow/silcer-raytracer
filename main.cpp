@@ -23,6 +23,7 @@ Perspective *view;
 char messageBuffer[100];
 char *messageBufferEnd = messageBuffer;
 
+Vector x_Axes(1,0,0);
 Vector y_Axes(0,1,0);
 Vector z_Axes(0,0,1);
 
@@ -47,14 +48,14 @@ void interpretConsole(){
 int renderSceneTop(void *p)
 {
 	RayTracer *tracer = (RayTracer*)p;
-	tracer->render(0, 0.4);
+	tracer->render(0, 0.5);
 	return 0;
 }
 
 int renderSceneBottom(void *p)
 {
 	RayTracer *tracer = (RayTracer*)p;
-	tracer->render(0.4,1);
+	tracer->render(0.5,1);
 	return 0;
 }
 int eventProcessor(void *p)
@@ -177,6 +178,7 @@ int dataPainter(void *p)
 		TransformGroup modelView;
 		modelView.transformation[13] = -0.5;
 		modelView.transformation[14] = 2;
+		modelView.transformation.rotate(3.1415, y_Axes);
 		OffModel model("meshes/bunnysimple.off");
 		RayTracer tracer(model);
 		modelView.addObj(&model);
@@ -185,7 +187,7 @@ int dataPainter(void *p)
 		Display.drawEverything();
 		SDL_CreateThread(renderSceneTop, &tracer);
 		SDL_CreateThread(renderSceneBottom, &tracer);
-		image.add(&tracer.image);
+//		image.add(&tracer.image);
 
 		long ticks = SDL_GetTicks();
 		int i = 0;
@@ -205,7 +207,7 @@ int dataPainter(void *p)
 				int x, y;
 				mouse.getDelta(x,y);
 				modelView.transformation.rotate(x/30.0, y_Axes);
-				modelView.transformation.rotate(y/30.0, z_Axes);
+				modelView.transformation.rotate(y/30.0, x_Axes);
 			}
 			console.setText(messageBuffer); //FIXME race condition?
 			Display.drawEverything();

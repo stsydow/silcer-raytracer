@@ -28,6 +28,8 @@ public:
 	Vector incommingLight;
 	Ray *lightRay;
 	Ray *nextRay;
+	const Triangle *originTriangle;
+	const Triangle *destinationTriangle;
 };
 
 #endif /* RAY_H_ */

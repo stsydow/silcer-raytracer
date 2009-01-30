@@ -15,8 +15,11 @@ const double dMax = std::numeric_limits<double>::max();
 Ray::Ray():
 	length(dMax),
 	lightRay(NULL),
-	nextRay(NULL){
+	nextRay(NULL),
+	originTriangle(NULL),
+	destinationTriangle(NULL){
 	hitpoint.zero();
+	incommingLight.zero();
 }
 
 Ray::~Ray() {
@@ -30,6 +33,7 @@ Ray::~Ray() {
 //             2 = are in the same plane
 int Ray::intersect(const Triangle &T)
 {
+	if(originTriangle && originTriangle == &T) return 0;
 	Coordinate &tOrigin =  T.v[0]->position;
     Vector u = T.a;
     Vector v = T.b;
@@ -72,7 +76,7 @@ int Ray::intersect(const Triangle &T)
 
     double newLength = (intersection -origin).abs();
 
-    if(EPSILON*10000 > newLength){
+    if(EPSILON > newLength){
     	return 0; // an other Triangle is in the way
     }
     if(length < newLength){
@@ -80,6 +84,7 @@ int Ray::intersect(const Triangle &T)
     }
 
     hitpoint = intersection;
+    destinationTriangle = &T;
     length = newLength;
     normal = (T.v[0]->normal + ( T.v[1]->normal  - T.v[0]->normal ) *s + (T.v[2]->normal  -  T.v[0]->normal )*t).normalize();
     return 1;                      // I is in T
@@ -92,15 +97,12 @@ bool Ray::intersect(const OffModel &M, const Vector &lightDir, const Vector &col
 		if(intersect(M.triangles[j]) == 1)	result = true;
 	}
 
-	if(!result){
-		{
-			incommingLight.zero();
-		}
-	}else{
+	if(result){
 		double factor = -(normal* lightDir);
 		if(factor > EPSILON){
 			lightRay = new Ray();
 			lightRay->origin = hitpoint;
+			lightRay->originTriangle = destinationTriangle;
 			lightRay->direction = -lightDir;
 			bool lightBlocked = false;
 			for(int k =0 ; k < M.numTriangles; k++){
@@ -125,6 +127,7 @@ bool Ray::intersect(const OffModel &M, const Vector &lightDir, const Vector &col
 		if(stage < 3 && direction * normal <0 ){
 			nextRay = new Ray();
 			nextRay->origin = hitpoint;
+			nextRay->originTriangle = destinationTriangle;
 			nextRay->direction =  direction + normal * (normal*direction * -2);
 			nextRay->intersect(M, lightDir, color, ++stage);
 			incommingLight += (nextRay->incommingLight * 0.5);
