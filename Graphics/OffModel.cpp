@@ -36,8 +36,8 @@ void OffModel::draw()
 		glColor4f(1,1,1,0.7);
 		if(doLighting) glEnable(GL_LIGHTING);
 		if(showTexture)glEnable(GL_TEXTURE_2D);
-		glBegin(GL_TRIANGLES);
-		Vertex * v;
+//		glBegin(GL_TRIANGLES);
+//		Vertex * v;
 //		for (int i = 0; i < numTriangles;  i++) {
 //				v = triangles[i].v[0];
 //				if(showTexture)glTexCoord2fv(v->textureCoord);
@@ -54,7 +54,7 @@ void OffModel::draw()
 //				glNormal3dv(v->normal);
 //				glVertex3dv(v->position);
 //			}
-		glEnd();
+//		glEnd();
 		if(showTexture)glDisable(GL_TEXTURE_2D);
 
 	    if(doLighting) glDisable(GL_LIGHTING);

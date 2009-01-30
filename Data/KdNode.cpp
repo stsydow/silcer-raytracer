@@ -32,7 +32,7 @@ KdNode::KdNode(const TriangleList &triangles, int size, int level):
 	left(NULL),
 	right(NULL)
 {
-	if(size < (2 << level)){
+	if(size < (1 << level)){
 		items = triangles;
 		//we are a leaf
 	}else{
@@ -42,7 +42,6 @@ KdNode::KdNode(const TriangleList &triangles, int size, int level):
 		int rightSize = 0;
 		TriangleList leftT;
 		TriangleList rightT;
-		double tMax, tMin;
 
 		for(TriangleList::const_iterator iter = triangles.begin();iter != triangles.end(); iter++){
 			Triangle &t = *(*iter);
@@ -59,8 +58,12 @@ KdNode::KdNode(const TriangleList &triangles, int size, int level):
 				rightSize++;
 			}
 		}
-		left = new KdNode(leftT, leftSize, level +1);
-		right = new KdNode(rightT, rightSize, level +1);
+		if(leftSize && rightSize){
+			left = new KdNode(leftT, leftSize, level +1);
+			right = new KdNode(rightT, rightSize, level +1);
+		}else{
+			items = triangles;
+		}
 	}
 
 }
@@ -69,6 +72,29 @@ KdNode::~KdNode() {
 	// TODO delete items
 }
 
-Triangle* KdNode::find(Ray &ray){
-
+bool KdNode::intersect(Ray &ray){
+	if(left){
+		if(ray.origin[level%3] < splitValue)
+		{
+			if(ray.direction[level%3] < 0){
+				return left->intersect(ray);
+			}else{
+				if(left->intersect(ray)) return true;
+				else return right->intersect(ray);
+			}
+		}else{
+			if(ray.direction[level%3] < 0){
+				if(right->intersect(ray)) return true;
+				else return left->intersect(ray);
+			}else{
+				return right->intersect(ray);
+			}
+		}
+	}else{
+		for(TriangleList::const_iterator iter = items.begin();iter != items.end(); iter++){
+			Triangle &t = *(*iter);
+			if(ray.intersect(t) == 1) return true;
+		}
+		return false;
+	}
 }

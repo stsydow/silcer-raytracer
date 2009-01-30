@@ -22,6 +22,7 @@ SDL_mutex* consoleMtx;
 Perspective *view;
 char messageBuffer[100];
 char *messageBufferEnd = messageBuffer;
+RayTracer *tracer;
 
 Vector x_Axes(1,0,0);
 Vector y_Axes(0,1,0);
@@ -47,14 +48,12 @@ void interpretConsole(){
 
 int renderSceneTop(void *p)
 {
-	RayTracer *tracer = (RayTracer*)p;
 	tracer->render(0, 0.5);
 	return 0;
 }
 
 int renderSceneBottom(void *p)
 {
-	RayTracer *tracer = (RayTracer*)p;
 	tracer->render(0.5,1);
 	return 0;
 }
@@ -180,14 +179,14 @@ int dataPainter(void *p)
 		modelView.transformation[14] = 2;
 		modelView.transformation.rotate(3.1415, y_Axes);
 		OffModel model("meshes/bunnysimple.off");
-		RayTracer tracer(model);
+		tracer = new RayTracer(model);
 		modelView.addObj(&model);
-		modelView.addObj(&tracer.camera);
+		modelView.addObj(&tracer->camera);
 		canvas.add(&modelView);
 		Display.drawEverything();
-		SDL_CreateThread(renderSceneTop, &tracer);
-		SDL_CreateThread(renderSceneBottom, &tracer);
-//		image.add(&tracer.image);
+		SDL_CreateThread(renderSceneTop, NULL);
+		SDL_CreateThread(renderSceneBottom, NULL);
+//		image.add(&tracer->image);
 
 		long ticks = SDL_GetTicks();
 		int i = 0;

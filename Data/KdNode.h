@@ -16,7 +16,7 @@ class KdNode {
 public:
 	KdNode(const TriangleList &triangles, int size, int level);
 	virtual ~KdNode();
-	Triangle* find(Ray &ray);
+	bool intersect(Ray &ray);
 	int level;
 	double splitValue;
 	KdNode *left;
