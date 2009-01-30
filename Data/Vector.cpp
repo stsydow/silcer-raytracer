@@ -78,16 +78,6 @@ const Vector Vector::operator*(double factor)const{
 	return result;
 }
 
-double& Vector::operator[](int i){
-
-	return X[i];
-}
-
-double Vector::operator[](int i) const{
-
-	return X[i];
-}
-
 const Vector Vector::normalize()const{
 	Vector result(*this);
 	double length = abs();

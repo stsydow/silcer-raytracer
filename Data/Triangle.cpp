@@ -26,21 +26,17 @@ void Triangle::computeNormal(){
 
 	faceNormal = a.times(b).normalize();
 	for(int i = 0; i < 3; i++){
-		if(a[i] > 0 && b[i] > 0){
+
+		if(v[0]->position[i]<v[1]->position[i]){
 			min[i] = v[0]->position[i];
-			if(a[i] < b[i]){
-				max[i] = v[2]->position[i];
-			}else{
-				max[i] = v[1]->position[i];
-			}
+			max[i] = v[1]->position[i];
 		}else{
+			min[i] = v[1]->position[i];
 			max[i] = v[0]->position[i];
-			if(a[i] < b[i]){
-				min[i] = v[1]->position[i];
-			}else{
-				min[i] = v[2]->position[i];
-			}
 		}
+
+		if(min[i] > v[2]->position[i]) min[i] = v[2]->position[i];
+		if(max[i] < v[2]->position[i]) max[i] = v[2]->position[i];
 	}
 }
 

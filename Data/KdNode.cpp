@@ -7,7 +7,7 @@
 
 #include "KdNode.h"
 #include <math.h>
-
+#include "../Data/constants.h"
 void KdNode::computeMedian(const TriangleList &triangles, int size){
 		int dimension = level%3;
 		int testRatio = (int)(size/sqrt(size));
@@ -46,24 +46,24 @@ KdNode::KdNode(const TriangleList &triangles, int size, int level):
 		for(TriangleList::const_iterator iter = triangles.begin();iter != triangles.end(); iter++){
 			Triangle &t = *(*iter);
 
-			if(t.min[dimension] < splitValue){
+			if(t.min[dimension] < splitValue+EPSILON){
 				leftT.push_back(&t);
 				leftSize++;
-				if(t.max[dimension] > splitValue){
+				if(t.max[dimension] > splitValue - EPSILON){
 					rightT.push_back(&t);
 					rightSize++;
 				}
 			}else{
 				rightT.push_back(&t);
 				rightSize++;
+				if(t.min[dimension] < splitValue){
+					leftT.push_back(&t);
+					leftSize++;
+				}
 			}
 		}
-		if(leftSize && rightSize){
-			left = new KdNode(leftT, leftSize, level +1);
-			right = new KdNode(rightT, rightSize, level +1);
-		}else{
-			items = triangles;
-		}
+		left = new KdNode(leftT, leftSize, level +1);
+		right = new KdNode(rightT, rightSize, level +1);
 	}
 
 }
@@ -73,28 +73,29 @@ KdNode::~KdNode() {
 }
 
 bool KdNode::intersect(Ray &ray){
+	bool result = false;
 	if(left){
 		if(ray.origin[level%3] < splitValue)
 		{
 			if(ray.direction[level%3] < 0){
-				return left->intersect(ray);
+				result = left->intersect(ray);
 			}else{
-				if(left->intersect(ray)) return true;
-				else return right->intersect(ray);
+				if(left->intersect(ray)) result = true;
+				if(right->intersect(ray)) result = true;
 			}
 		}else{
 			if(ray.direction[level%3] < 0){
-				if(right->intersect(ray)) return true;
-				else return left->intersect(ray);
+				if(right->intersect(ray)) result = true;
+				if(left->intersect(ray)) result = true;
 			}else{
-				return right->intersect(ray);
+				result = right->intersect(ray);
 			}
 		}
 	}else{
 		for(TriangleList::const_iterator iter = items.begin();iter != items.end(); iter++){
 			Triangle &t = *(*iter);
-			if(ray.intersect(t) == 1) return true;
+			if(ray.intersect(t) == 1) result = true;
 		}
-		return false;
 	}
+	return result;
 }

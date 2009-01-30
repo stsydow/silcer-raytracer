@@ -77,7 +77,7 @@ int Ray::intersect(const Triangle &T)
     double newLength = (intersection -origin).abs();
 
     if(EPSILON > newLength){
-    	return 0; // an other Triangle is in the way
+    	return 0; // to near
     }
     if(length < newLength){
     	return 0; // an other Triangle is in the way

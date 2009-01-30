@@ -15,8 +15,10 @@ public:
 	explicit Vector(const double value[3]);
 	Vector(double x, double y, double z);
 
-	double& operator[](int i);
-	double operator[](int i) const;
+
+	inline double& operator[](int i){return X[i];}
+	inline double operator[](int i) const{return X[i];}
+
 	Vector& operator=(const Vector& value);
 	const Vector operator+(const Vector& value)const;
 	const Vector operator-(const Vector& value)const;

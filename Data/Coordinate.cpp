@@ -55,11 +55,11 @@ double Coordinate::operator[](int i) const{
 }
 
 const Vector Coordinate::operator-(const Coordinate& value)const{
-	Vector diff;
-	diff[0] = X[0] - value[0];
-	diff[1] = X[1] - value[1];
-	diff[2] = X[2] - value[2];
-	return diff;
+	Vector result(X);
+	result[0] -= value[0];
+	result[1] -= value[1];
+	result[2] -= value[2];
+	return result;
 }
 
 const double Coordinate::abs()const{
