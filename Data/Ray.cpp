@@ -88,56 +88,19 @@ int Ray::intersect(const Triangle &T)
     return 1;                      // I is in T
 }
 
-bool Ray::intersect(const OffModel &M, const Vector &lightDir, const Vector &color, int stage)
-{
-	bool result = false;
-	for(int j =0 ; j < M.numTriangles; j++){
-		if(intersect(M.triangles[j]) == 1)	result = true;
-	}
-
-	if(result){
-		double factor = -(normal* lightDir);
-		if(factor > EPSILON){
-			lightRay = new Ray();
-			lightRay->origin = hitpoint;
-			lightRay->originTriangle = destinationTriangle;
-			lightRay->setDirection(-lightDir);
-			bool lightBlocked = false;
-			for(int k =0 ; k < M.numTriangles; k++){
-				if(lightRay->intersect(M.triangles[k]) == 1){
-					lightBlocked = true;
-					break;
-				}
-			}
-			if(lightBlocked){
-				incommingLight = color*0.2;
-			}else{
-				double blinnTerm = (lightRay->direction - direction).normalize()* normal;;
-				if(blinnTerm < 0) blinnTerm = 0;
-				blinnTerm = pow(blinnTerm , 100);
-
-				incommingLight = color*(0.2 + 0.3 * factor + 1 * blinnTerm);
-			}
-
-		}else{
-			incommingLight = color*0.2;
-		}
-		if(stage < 3 && direction * normal <0 ){
-			nextRay = new Ray();
-			nextRay->origin = hitpoint;
-			nextRay->originTriangle = destinationTriangle;
-			nextRay->setDirection(direction + normal * (normal*direction * -2));
-			nextRay->intersect(M, lightDir, color, ++stage);
-			incommingLight += (nextRay->incommingLight * 0.5);
-		}
-	}
-	return result;
-}
 void Ray::setDirection(const Vector &value){
 	direction = value;
 	inv_direction = Vector(1/value[0], 1/value[1], 1/value[2]);
-	sign[0] = (inv_direction[0] < 0);
-	sign[1] = (inv_direction[1] < 0);
-	sign[2] = (inv_direction[2] < 0);
 }
 
+void Ray::reset(){
+	if(lightRay) delete lightRay;
+	if(nextRay) delete nextRay;
+	length = DOUBLEMAX;
+	lightRay = NULL;
+	nextRay = NULL;
+	originTriangle = NULL;
+	destinationTriangle = NULL;
+	hitpoint.zero();
+	incommingLight.zero();
+}

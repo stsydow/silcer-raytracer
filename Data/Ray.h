@@ -11,7 +11,6 @@
 #include "Vector.h"
 #include "Coordinate.h"
 #include "Triangle.h"
-#include "../Graphics/OffModel.h"
 class Ray;
 class Ray {
 public:
@@ -19,12 +18,10 @@ public:
 	virtual ~Ray();
 	void setDirection(const Vector &value);
 	int intersect(const Triangle &T);
-	bool intersect(const OffModel &M, const Vector &lightDir, const Vector &color, int stage);
-
+	void reset();
 	Coordinate origin;
 	Vector direction;
 	Vector inv_direction;
-    int sign[3];
 	Vector normal;
 	Coordinate hitpoint;
 	double length;

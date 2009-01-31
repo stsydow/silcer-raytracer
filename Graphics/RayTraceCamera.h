@@ -8,7 +8,8 @@
 #ifndef RAYTRACECAMERA_H_
 #define RAYTRACECAMERA_H_
 
-#include "../Graphics/Drawable.h"
+#include "Drawable.h"
+#include "Light.h"
 #include "../Data/Ray.h"
 
 class RayTraceCamera:
@@ -27,9 +28,8 @@ protected:
 	int height, width, size;
 	double pixelSize;
 	bool record;
-	int factor;
-	Coordinate lightPosition;
-	Vector lightDirection;
+	int numLights;
+	Light *lights;
 };
 
 

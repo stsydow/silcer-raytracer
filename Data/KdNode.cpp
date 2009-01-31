@@ -107,8 +107,8 @@ double KdNode::intersect(Ray &ray){
 	double tfar = 1e6;
 
 	for(int i = 0; i< 3; i++){
-		double t1 = (min[i] - ray.origin[i]) / ray.direction[i];
-		double t2 = (max[i] - ray.origin[i]) / ray.direction[i];
+		double t1 = (min[i] - ray.origin[i]) * ray.inv_direction[i];
+		double t2 = (max[i] - ray.origin[i]) * ray.inv_direction[i];
 
 		if(t1 > t2)
 		{

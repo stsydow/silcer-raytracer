@@ -75,19 +75,8 @@ int eventProcessor(void *p)
 				if(myEvent->key.keysym.sym == SDLK_ESCAPE)
 				{
 					quit = true;
-				}else if(myEvent->key.keysym.sym == SDLK_RIGHT){
-					view->setFocusPoint(e_X, view->getFocusPoint(e_X)+ 0.1);
-				}else if(myEvent->key.keysym.sym == SDLK_LEFT){
-					view->setFocusPoint(e_X, view->getFocusPoint(e_X)- 0.1);
-				}else if(myEvent->key.keysym.sym == SDLK_UP){
-					view->setFocusPoint(e_Y, view->getFocusPoint(e_Y)+ 0.1);
-				}else if(myEvent->key.keysym.sym == SDLK_DOWN){
-					view->setFocusPoint(e_Y, view->getFocusPoint(e_Y)- 0.1);
-				}else if(myEvent->key.keysym.sym == SDLK_PERIOD){
-					view->setFocusPoint(e_Z, view->getFocusPoint(e_Z)+ 0.1);
-				}else if(myEvent->key.keysym.sym == SDLK_SLASH){
-					view->setFocusPoint(e_Z, view->getFocusPoint(e_Z)- 0.1);
-
+				}else if(myEvent->key.keysym.sym == 'r'){
+					tracer->record();
 				}else{
 					if(messageBufferEnd - messageBuffer < 100)
 					{
@@ -167,7 +156,7 @@ int dataPainter(void *p)
 		SDL_UnlockMutex(consoleMtx);
 		console.setText(messageBuffer);
 
-	    //glEnable(GL_DEPTH_TEST);
+	    //
 		glEnable(GL_LIGHT0);
 		glEnable(GL_LIGHT_MODEL_LOCAL_VIEWER);
 		//glShadeModel(GL_SMOOTH);
@@ -185,8 +174,7 @@ int dataPainter(void *p)
 		//modelView.addObj(tracer->kdTree);
 		canvas.add(&modelView);
 		Display.drawEverything();
-		SDL_CreateThread(renderSceneTop, NULL);
-		SDL_CreateThread(renderSceneBottom, NULL);
+
 //		image.add(&tracer->image);
 
 		long ticks = SDL_GetTicks();
@@ -211,6 +199,10 @@ int dataPainter(void *p)
 			}
 			console.setText(messageBuffer); //FIXME race condition?
 			Display.drawEverything();
+			if(!tracer->running && tracer->ready){
+				SDL_CreateThread(renderSceneTop, NULL);
+				SDL_CreateThread(renderSceneBottom, NULL);
+			}
 			SDL_PumpEvents();
 			SDL_Delay(100);
 

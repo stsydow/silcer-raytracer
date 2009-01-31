@@ -30,31 +30,37 @@ void OffModel::draw()
 {
 	if (enabled){
 		glPushMatrix();
-		GLfloat _directionalVec[] = { 0.0, 1.0, 0.0, 0.0 };
+		GLfloat _directionalVec[] = { 0.0, 0.0, 4.0, 1.0 };
+		GLfloat _ambientVec[] = { 0.1, 0.1, 0.1, 1.0 };
+		GLfloat _diffuseVec[] = { 0.5, 0.5, 0.5, 1.0 };
+		GLfloat _specularVec[] = { 1.0, 1.0, 1.0, 1.0 };
 		glLightfv(GL_LIGHT0, GL_POSITION, _directionalVec);
-
+		glLightfv(GL_LIGHT0, GL_DIFFUSE, _diffuseVec);
+		glLightfv(GL_LIGHT0, GL_AMBIENT, _ambientVec);
+		glLightfv(GL_LIGHT0, GL_SPECULAR, _specularVec);
+		glEnable(GL_DEPTH_TEST);
 		glColor4f(1,1,1,0.7);
 		if(doLighting) glEnable(GL_LIGHTING);
 		if(showTexture)glEnable(GL_TEXTURE_2D);
-//		glBegin(GL_TRIANGLES);
-//		Vertex * v;
-//		for (int i = 0; i < numTriangles;  i++) {
-//				v = triangles[i].v[0];
-//				if(showTexture)glTexCoord2fv(v->textureCoord);
-//				glNormal3dv(v->normal);
-//				glVertex3dv(v->position);
-//
-//				v = triangles[i].v[1];
-//				if(showTexture)glTexCoord2fv(v->textureCoord);
-//				glNormal3dv(v->normal);
-//				glVertex3dv(v->position);
-//
-//				v = triangles[i].v[2];
-//				if(showTexture)glTexCoord2fv(v->textureCoord);
-//				glNormal3dv(v->normal);
-//				glVertex3dv(v->position);
-//			}
-//		glEnd();
+		glBegin(GL_TRIANGLES);
+		Vertex * v;
+		for (int i = 0; i < numTriangles;  i++) {
+				v = triangles[i].v[0];
+				if(showTexture)glTexCoord2fv(v->textureCoord);
+				glNormal3dv(v->normal);
+				glVertex3dv(v->position);
+
+				v = triangles[i].v[1];
+				if(showTexture)glTexCoord2fv(v->textureCoord);
+				glNormal3dv(v->normal);
+				glVertex3dv(v->position);
+
+				v = triangles[i].v[2];
+				if(showTexture)glTexCoord2fv(v->textureCoord);
+				glNormal3dv(v->normal);
+				glVertex3dv(v->position);
+			}
+		glEnd();
 		if(showTexture)glDisable(GL_TEXTURE_2D);
 
 	    if(doLighting) glDisable(GL_LIGHTING);
@@ -68,6 +74,7 @@ void OffModel::draw()
 				}
 			glEnd();
 	    }
+	    glDisable(GL_DEPTH_TEST);
 	    glPopMatrix();
 	}
 }
