@@ -167,12 +167,12 @@ int dataPainter(void *p)
 		SDL_UnlockMutex(consoleMtx);
 		console.setText(messageBuffer);
 
-	    glEnable(GL_DEPTH_TEST);
+	    //glEnable(GL_DEPTH_TEST);
 		glEnable(GL_LIGHT0);
 		glEnable(GL_LIGHT_MODEL_LOCAL_VIEWER);
-		glShadeModel(GL_SMOOTH);
-		glEnable (GL_POINT_SMOOTH);	// Antialiasing fuer Punkte einschalten
-		glEnable (GL_LINE_SMOOTH);	// Antialiasing fuer Linien einschalten
+		//glShadeModel(GL_SMOOTH);
+		//glEnable (GL_POINT_SMOOTH);	// Antialiasing fuer Punkte einschalten
+		//glEnable (GL_LINE_SMOOTH);	// Antialiasing fuer Linien einschalten
 
 		TransformGroup modelView;
 		modelView.transformation[13] = -0.5;

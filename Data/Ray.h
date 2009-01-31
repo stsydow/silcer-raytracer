@@ -17,14 +17,18 @@ class Ray {
 public:
 	Ray();
 	virtual ~Ray();
+	void setDirection(const Vector &value);
+	int intersect(const Triangle &T);
+	bool intersect(const OffModel &M, const Vector &lightDir, const Vector &color, int stage);
+
 	Coordinate origin;
 	Vector direction;
+	Vector inv_direction;
+    int sign[3];
 	Vector normal;
 	Coordinate hitpoint;
 	double length;
 	const Triangle *surface;
-	int intersect(const Triangle &T);
-	bool intersect(const OffModel &M, const Vector &lightDir, const Vector &color, int stage);
 	Vector incommingLight;
 	Ray *lightRay;
 	Ray *nextRay;

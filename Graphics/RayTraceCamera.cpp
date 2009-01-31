@@ -46,7 +46,7 @@ void RayTraceCamera::draw()
 				pixelRays[j*width + i].origin = result;
 				offset = result;
 				gluUnProject(i*pixelSize, viewport[3] - j*pixelSize, 1, modelview, projection, viewport, &result[0] , &result[1], &result[2]);
-				pixelRays[j*width + i].direction = (result - offset).normalize();
+				pixelRays[j*width + i].setDirection((result - offset).normalize());
 			}
 		}
 		record = false;

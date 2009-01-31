@@ -101,7 +101,7 @@ bool Ray::intersect(const OffModel &M, const Vector &lightDir, const Vector &col
 			lightRay = new Ray();
 			lightRay->origin = hitpoint;
 			lightRay->originTriangle = destinationTriangle;
-			lightRay->direction = -lightDir;
+			lightRay->setDirection(-lightDir);
 			bool lightBlocked = false;
 			for(int k =0 ; k < M.numTriangles; k++){
 				if(lightRay->intersect(M.triangles[k]) == 1){
@@ -126,10 +126,18 @@ bool Ray::intersect(const OffModel &M, const Vector &lightDir, const Vector &col
 			nextRay = new Ray();
 			nextRay->origin = hitpoint;
 			nextRay->originTriangle = destinationTriangle;
-			nextRay->direction =  direction + normal * (normal*direction * -2);
+			nextRay->setDirection(direction + normal * (normal*direction * -2));
 			nextRay->intersect(M, lightDir, color, ++stage);
 			incommingLight += (nextRay->incommingLight * 0.5);
 		}
 	}
 	return result;
 }
+void Ray::setDirection(const Vector &value){
+	direction = value;
+	inv_direction = Vector(1/value[0], 1/value[1], 1/value[2]);
+	sign[0] = (inv_direction[0] < 0);
+	sign[1] = (inv_direction[1] < 0);
+	sign[2] = (inv_direction[2] < 0);
+}
+

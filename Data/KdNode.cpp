@@ -13,6 +13,7 @@ const Vector one(1,1,1);
 
 KdNode::KdNode(int level):
 	level(level),
+	size(0),
 	left(NULL),
 	right(NULL),
 	min(-DOUBLEMAX,-DOUBLEMAX,-DOUBLEMAX),
@@ -37,7 +38,7 @@ KdNode::~KdNode() {
 
 void KdNode::computeMedian(const TriangleList &triangles, int size){
 		int dimension = level%3;
-		int testRatio = (int)(size/sqrt(size));
+		int testRatio = (int)(size/sqrt(size +1));
 		std::list<double> decisionSet;
 		int decisionSetSize = 0;
 		TriangleList::const_iterator iter = triangles.begin();
@@ -51,11 +52,15 @@ void KdNode::computeMedian(const TriangleList &triangles, int size){
 		decisionSet.sort();
 		std::list<double>::iterator median = decisionSet.begin();
 		for(int i = 0; i < decisionSetSize/2; i++) median++;
-		splitValue = (*median);
+		double minValue = *decisionSet.begin();
+		double maxValue = *(--decisionSet.end());
+		if((max[dimension] - maxValue) > (max[dimension] - min[dimension])/2) splitValue = maxValue;
+		else if((minValue - min[dimension]) > (max[dimension] - min[dimension])/2) splitValue = minValue;
+		else splitValue = (*median);
 }
 
 void KdNode::split(){
-	if(size > 4 && level < 8 ){
+	if(size > 10 && level < 20){
 		int dimension = level%3;
 		computeMedian(items, size);
 		left = new KdNode(level +1);
@@ -83,6 +88,8 @@ void KdNode::split(){
 		left->split();
 		right->split();
 		items.clear();
+	}else{
+		int i =10;
 	}
 }
 bool KdNode::intersect(Triangle &t){
@@ -93,30 +100,42 @@ bool KdNode::intersect(Triangle &t){
 	    );
 }
 
+
+
 bool KdNode::intersect(Ray &ray){
-	bool result = false;
-	if(left){
-		if(ray.origin[level%3] < splitValue)
+
+	double tnear = -1e6;
+	double tfar = 1e6;
+
+	for(int i = 0; i< 3; i++){
+		double t1 = (min[i] - ray.origin[i]) / ray.direction[i];
+		double t2 = (max[i] - ray.origin[i]) / ray.direction[i];
+
+		if(t1 > t2)
 		{
-			if(ray.direction[level%3] < 0){
-				result = left->intersect(ray);
-			}else{
-				if(left->intersect(ray)) result = true;
-				else if(right->intersect(ray)) result = true;
-			}
-		}else{
-			if(ray.direction[level%3] < 0){
-				if(right->intersect(ray)) result = true;
-				else if(left->intersect(ray)) result = true;
-			}else{
-				result = right->intersect(ray);
-			}
+			double temp = t1;
+			t1 = t2;
+			t2 = temp;
 		}
-	}else{
+		if(t1 > tnear)
+			tnear = t1;
+		if(t2 < tfar)
+			tfar = t2;
+
+		if(tnear > tfar)
+			return false;
+		if(tfar < 0.0)
+			return false;
+	}
+	bool result = false;
+	if(!left){
 		for(TriangleList::const_iterator iter = items.begin();iter != items.end(); iter++){
 			Triangle &t = *(*iter);
 			if(ray.intersect(t) == 1) result = true;
 		}
+	}else{
+		if(left->intersect(ray) == 1) result = true;
+		if(right->intersect(ray) == 1) result = true;
 	}
 	return result;
 }
@@ -128,8 +147,10 @@ void KdNode::draw(){
 		right->draw();
 		glEnd();
 	}else {
-		if(level != 7){
+		if(left){
 		double minx = min[0];
+		Vector color(level%3,(level+1)%3,(level+2)%3);
+		glColor3dv(color);
 		if(fabs(minx) > 2 ) minx = -2;
 		double miny = min[1];
 		if(fabs(miny) > 2 ) miny = -2;
@@ -162,7 +183,6 @@ void KdNode::draw(){
 		glVertex3d(minx,maxy, maxz);
 		glVertex3d(maxx,miny, minz);
 		glVertex3d(maxx,maxy, minz);
-
 
 			left->draw();
 			right->draw();
