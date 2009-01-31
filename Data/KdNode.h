@@ -10,20 +10,28 @@
 #include "Triangle.h"
 #include "Ray.h"
 #include <list>
+#include "../Graphics/Drawable.h"
 
 typedef std::list<Triangle*> TriangleList;
-class KdNode {
+class KdNode:
+	public Drawable{
 public:
-	KdNode(const TriangleList &triangles, int size, int level);
+	KdNode(int level);
+	KdNode(const TriangleList &triangles, int size);
 	virtual ~KdNode();
+	void split();
 	bool intersect(Ray &ray);
+	bool intersect(Triangle &t);
+	virtual void draw();
+private:
+	void computeMedian(const TriangleList &triangles, int size);
 	int level;
+	int size;
 	double splitValue;
 	KdNode *left;
 	KdNode *right;
 	TriangleList items;
-private:
-	void computeMedian(const TriangleList &triangles, int size);
+	Coordinate min, max;
 };
 
 #endif /* KDNODE_H_ */

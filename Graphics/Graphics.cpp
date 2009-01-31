@@ -49,13 +49,14 @@ void Graphics::add(ViewPort *viewPort)
 
 void Graphics::drawEverything()
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 
 	for(vector<ViewPort*>::iterator Iter = viewPortList.begin(); Iter != viewPortList.end(); Iter++)
 	{
 		(*Iter)->render();
 	}
 	SDL_GL_SwapBuffers();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 SDL_Surface* Graphics::getScreen()

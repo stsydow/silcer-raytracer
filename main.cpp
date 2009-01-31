@@ -182,6 +182,7 @@ int dataPainter(void *p)
 		tracer = new RayTracer(model);
 		modelView.addObj(&model);
 		modelView.addObj(&tracer->camera);
+		//modelView.addObj(tracer->kdTree);
 		canvas.add(&modelView);
 		Display.drawEverything();
 		SDL_CreateThread(renderSceneTop, NULL);

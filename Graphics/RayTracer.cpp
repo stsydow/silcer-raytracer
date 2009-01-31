@@ -21,7 +21,7 @@ RayTracer::RayTracer(const OffModel &model):
 	for(int i =0 ; i <  model.numTriangles; i++){
 		triangles.push_back(model.triangles + i);
 	}
-	kdTree = new KdNode(triangles, model.numTriangles, 0);
+	kdTree = new KdNode(triangles, model.numTriangles);
 }
 
 RayTracer::~RayTracer() {

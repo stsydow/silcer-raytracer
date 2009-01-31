@@ -12,7 +12,7 @@
 #include "OffModel.h"
 #include "../Data/KdNode.h"
 
-class RayTracer {
+class RayTracer{
 public:
 	RayTracer(const OffModel &model);
 	virtual ~RayTracer();

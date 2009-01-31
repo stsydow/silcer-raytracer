@@ -24,6 +24,7 @@ void Triangle::computeNormal(){
 	a = v[1]->position - v[0]->position;
 	b = v[2]->position - v[0]->position;
 
+	center = v[0]->position + (a + b)*0.25;
 	faceNormal = a.times(b).normalize();
 	for(int i = 0; i < 3; i++){
 

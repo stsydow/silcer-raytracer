@@ -9,11 +9,9 @@
 #include "constants.h"
 #include <math.h>
 #include "assert.h"
-#include <limits>
-const double dMax = std::numeric_limits<double>::max();
 
 Ray::Ray():
-	length(dMax),
+	length(DOUBLEMAX),
 	lightRay(NULL),
 	nextRay(NULL),
 	originTriangle(NULL),
