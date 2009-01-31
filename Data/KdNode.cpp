@@ -99,49 +99,50 @@ bool KdNode::intersect(Triangle &t){
 	    );
 }
 
+bool KdNode::intersect(Ray &ray, double &near, double &far){
 
-
-double KdNode::intersect(Ray &ray){
-
-	double tnear = -1e6;
-	double tfar = 1e6;
-
+	near = -DOUBLEMAX;
+	far = DOUBLEMAX;
+	double t1;
+	double t2;
+	double temp;
 	for(int i = 0; i< 3; i++){
-		double t1 = (min[i] - ray.origin[i]) * ray.inv_direction[i];
-		double t2 = (max[i] - ray.origin[i]) * ray.inv_direction[i];
-
+		t1 = (min[i] - ray.origin[i]) * ray.inv_direction[i];
+		t2 = (max[i] - ray.origin[i]) * ray.inv_direction[i];
 		if(t1 > t2)
 		{
-			double temp = t1;
+			temp = t1;
 			t1 = t2;
 			t2 = temp;
 		}
-		if(t1 > tnear)
-			tnear = t1;
-		if(t2 < tfar)
-			tfar = t2;
-
-		if(tnear > tfar)
-			return DOUBLEMAX;
-		if(tfar < 0.0)
-			return DOUBLEMAX;
+		if(t1 > near) near = t1;
+		if(t2 < far) far = t2;
+		if(near > far) return false;
+		if(far < 0.0) return false;
 	}
-	return tnear;
+	return true;
 }
 
 bool KdNode::traverse(Ray &ray){
 	bool result = false;
 	if(left){
-		double leftNear = left->intersect(ray);
-		double rightNear = right->intersect(ray);
-		if(rightNear == DOUBLEMAX) return left->traverse(ray);
-		if(leftNear == DOUBLEMAX) return right->traverse(ray);
+		double leftNear, leftFar,rightNear,rightFar;
+		if(!left->intersect(ray, leftNear, leftFar)) return right->traverse(ray);
+		if(!right->intersect(ray, rightNear, rightFar)) return left->traverse(ray);
 		if(rightNear < leftNear){
+			ray.length = rightFar;
 			if(right->traverse(ray)) result = true;
-			else result = left->traverse(ray);
+			else {
+				ray.length = leftFar;
+				result = left->traverse(ray);
+			}
 		}else{
+			ray.length = leftFar;
 			if(left->traverse(ray)) result = true;
-			else result = right->traverse(ray);
+			else {
+				ray.length = rightFar;
+				result = right->traverse(ray);
+			}
 		}
 
 	}else{

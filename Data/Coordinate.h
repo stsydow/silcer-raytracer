@@ -20,10 +20,10 @@ public:
 	const Coordinate operator+(const Vector& value)const;
 	const Coordinate operator-(const Vector& value)const;
 	const Vector operator-(const Coordinate& value)const;
-	double& operator[](int i);
-	double operator[](int i) const;
+	inline double& operator[](int i) {return X[i];}
+	inline double operator[](int i) const {return X[i];}
 	const double abs()const;
-	operator const double *const() const;
+	inline operator const double *const() const {return X;}
 	void zero();
 protected:
 	double X[3];

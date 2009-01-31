@@ -7,7 +7,6 @@
 
 #include "Vector.h"
 #include <string.h>
-#include "constants.h"
 #include <math.h>
 
 Vector::Vector(){
@@ -54,10 +53,6 @@ const Vector Vector::operator-()const{
 	return result;
 }
 
-const double Vector::operator*(const Vector& value)const{
-	return  X[e_X] * value[e_X] + X[e_Y] * value[e_Y] + X[e_Z] * value[e_Z];
-}
-
 const Vector Vector::times(const Vector& value)const{
 	Vector result;
 	result[e_X] = X[e_Y] * value[e_Z] - X[e_Z] * value[e_Y];
@@ -85,10 +80,6 @@ const Vector Vector::normalize()const{
 	result[1] = X[1]/length;
 	result[2] = X[2]/length;
 	return result;
-}
-
-Vector::operator const double *const() const{
-	return X;
 }
 
 Vector &Vector::operator+=(const Vector &value){

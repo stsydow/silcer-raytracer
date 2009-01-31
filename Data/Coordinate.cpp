@@ -44,16 +44,6 @@ const Coordinate Coordinate::operator-(const Vector& value)const{
 	return result;
 }
 
-double& Coordinate::operator[](int i){
-
-	return X[i];
-}
-
-double Coordinate::operator[](int i) const{
-
-	return X[i];
-}
-
 const Vector Coordinate::operator-(const Coordinate& value)const{
 	Vector result(X);
 	result[0] -= value[0];
@@ -66,9 +56,6 @@ const double Coordinate::abs()const{
 	return  sqrt(X[e_X] * X[e_X] + X[e_Y] * X[e_Y] + X[e_Z] * X[e_Z]);
 }
 
-Coordinate::operator const double *const() const{
-	return X;
-}
 void Coordinate::zero(){
 	memset(X, 0, sizeof(double)*3);
 }

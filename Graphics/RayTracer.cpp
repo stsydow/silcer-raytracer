@@ -10,7 +10,7 @@
 #include "../Data/constants.h"
 RayTracer::RayTracer(const OffModel &model):
 	model(model),
-	pixelSize(2),
+	pixelSize(8),
 	width(1280/pixelSize),
 	height(800/pixelSize),
 	size(height * width),
