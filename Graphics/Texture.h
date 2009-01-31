@@ -35,6 +35,7 @@ public:
 			throw(runtime_error);
 	virtual ~Texture();
 	GLint getTexture();
+	SDL_Surface* bitmap;
 
 protected:
 	GLuint texture;

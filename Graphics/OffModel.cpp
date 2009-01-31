@@ -13,8 +13,9 @@
 
 OffModel::OffModel(char* filename):
 	showNormals(OFF),
-	showTexture(OFF),
-	doLighting(ON)
+	showTexture(ON),
+	doLighting(ON),
+	tex("saturncyl1.bmp")
 {
 	readOff(filename);
 	calculateTextureCoordinates();
@@ -30,7 +31,7 @@ void OffModel::draw()
 {
 	if (enabled){
 		glPushMatrix();
-		GLfloat _directionalVec[] = { 0.0, 0.0, 4.0, 1.0 };
+		GLfloat _directionalVec[] = { 0.0, 0.0, 0.0, 1.0 };
 		GLfloat _ambientVec[] = { 0.1, 0.1, 0.1, 1.0 };
 		GLfloat _diffuseVec[] = { 0.5, 0.5, 0.5, 1.0 };
 		GLfloat _specularVec[] = { 1.0, 1.0, 1.0, 1.0 };
@@ -40,6 +41,7 @@ void OffModel::draw()
 		glLightfv(GL_LIGHT0, GL_SPECULAR, _specularVec);
 		glEnable(GL_DEPTH_TEST);
 		glColor4f(1,1,1,0.7);
+		glBindTexture(GL_TEXTURE_2D, tex.getTexture());
 		if(doLighting) glEnable(GL_LIGHTING);
 		if(showTexture)glEnable(GL_TEXTURE_2D);
 		glBegin(GL_TRIANGLES);

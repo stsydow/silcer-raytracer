@@ -10,29 +10,31 @@
 #include "../Data/constants.h"
 RayTracer::RayTracer(const OffModel &model):
 	model(model),
-	pixelSize(8),
+	pixelSize(3.0),
 	width(1280/pixelSize),
 	height(800/pixelSize),
 	size(height * width),
 	camera(width,height,pixelSize),
 	kdTree(NULL),
+	texture(model.tex.bitmap),
 	running(false),
 	ready(false)
 {
 
 	TriangleList triangles;
+	Triangle *t = new Triangle(new Vertex(-300,0.16,-100),new Vertex(0,0.16,10),new Vertex(300,0.16,-100));
+	triangles.push_back(t);
 	for(int i =0 ; i <  model.numTriangles; i++){
 		triangles.push_back(model.triangles + i);
 	}
-	Triangle *t = new Triangle(new Vertex(-300,0.16,-100),new Vertex(0,0.16,10),new Vertex(300,0.16,-100));
-	triangles.push_back(t);
+
     image = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32,
     #if SDL_BYTEORDER == SDL_BIG_ENDIAN
         0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
     #else
         0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
     #endif
-	kdTree = new KdNode(triangles, model.numTriangles + 1);
+	kdTree = new KdNode(triangles, model.numTriangles/4 + 1);
 }
 
 RayTracer::~RayTracer() {
@@ -42,6 +44,7 @@ RayTracer::~RayTracer() {
 
 bool RayTracer::castRay(Ray &ray, int stage){;
 	bool result = kdTree->traverse(ray);
+	unsigned int *pixel;
 	if(result){
 		ray.incommingLight.zero();
 		for(int i = 0; i < camera.numLights; i++){
@@ -66,12 +69,17 @@ bool RayTracer::castRay(Ray &ray, int stage){;
 					double blinnTerm = (ray.lightRay->direction - ray.direction).normalize()* ray.normal;;
 					if(blinnTerm < 0) blinnTerm = 0;
 					blinnTerm = pow(blinnTerm , 100);
-
-					ray.incommingLight += light.diffuseColor *(factor/(length*length)) + light.specularColor * blinnTerm;
+					float *texCoords = ray.destinationTriangle->v[0]->textureCoord;
+					pixel = (unsigned int*)texture->pixels + (int)(texture->w *(texCoords[0] + texture->h*texCoords[1]));
+					for(int i = 0; i< 3;i++)
+						ray.incommingLight[i] += ((unsigned char *)pixel)[i]/255.0 * light.diffuseColor[i] *(factor/(length*length)) + light.specularColor[i] * blinnTerm;
 				}
 
 			}
-			ray.incommingLight += light.ambientColor;
+			float *texCoords = ray.destinationTriangle->v[0]->textureCoord;
+			pixel = (unsigned int*)texture->pixels + (int)(texture->w *(texCoords[0] + texture->h*texCoords[1]));
+			for(int i = 0; i< 3;i++)
+				ray.incommingLight[i] += ((unsigned char *)pixel)[i]/255.0 *  light.ambientColor[i];
 		}
 		if(stage < 3 && ray.direction * ray.normal <0 ){
 			ray.nextRay = new Ray();
@@ -79,7 +87,10 @@ bool RayTracer::castRay(Ray &ray, int stage){;
 			ray.nextRay->originTriangle = ray.destinationTriangle;
 			ray.nextRay->setDirection(ray.direction + ray.normal * (ray.normal*ray.direction * -2));
 			castRay(*ray.nextRay, stage +1);
-			ray.incommingLight += (ray.nextRay->incommingLight * 0.5);
+			float *texCoords = ray.destinationTriangle->v[0]->textureCoord;
+			pixel = (unsigned int*)texture->pixels + (int)(texture->w *(texCoords[0] + texture->h*texCoords[1]));
+			for(int i = 0; i< 3;i++)
+				ray.incommingLight[i] += ((unsigned char *)pixel)[i]/255.0 *  (ray.nextRay->incommingLight[i] * 0.5);
 		}
 	}
 	return result;

@@ -7,7 +7,8 @@
 
 #ifndef OFFMODEL_H_
 #define OFFMODEL_H_
-#include "../Graphics/Drawable.h"
+#include "Drawable.h"
+#include "Texture.h"
 #include "../Data/Triangle.h"
 enum
 {
@@ -29,6 +30,7 @@ public:
 	int numTriangles;
 	Vertex* vertices;
 	Triangle* triangles;
+	Texture tex;
 private:
 
 	void readOff(char* filename);

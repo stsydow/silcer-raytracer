@@ -165,8 +165,8 @@ int dataPainter(void *p)
 
 		TransformGroup modelView;
 		modelView.transformation[13] = -0.5;
-		modelView.transformation[14] = 2;
-		modelView.transformation.rotate(3.1415, y_Axes);
+		modelView.transformation[14] = 3;
+		//modelView.transformation.rotate(3.1415, y_Axes);
 		OffModel model("meshes/bunnysimple.off");
 		tracer = new RayTracer(model);
 		modelView.addObj(&model);

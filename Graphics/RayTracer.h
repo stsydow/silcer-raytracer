@@ -25,6 +25,7 @@ public:
 	RayTraceCamera camera;
 	KdNode *kdTree;
 	SDL_Surface *image;
+	SDL_Surface *texture;
 	bool running, ready;
 
 };
