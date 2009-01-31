@@ -20,8 +20,9 @@ public:
 	KdNode(const TriangleList &triangles, int size);
 	virtual ~KdNode();
 	void split();
-	bool intersect(Ray &ray);
+	double intersect(Ray &ray);
 	bool intersect(Triangle &t);
+	bool traverse(Ray &ray);
 	virtual void draw();
 private:
 	void computeMedian(const TriangleList &triangles, int size);

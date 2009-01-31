@@ -60,7 +60,7 @@ void KdNode::computeMedian(const TriangleList &triangles, int size){
 }
 
 void KdNode::split(){
-	if(size > 10 && level < 20){
+	if(size > 4 && level < 18){
 		int dimension = level%3;
 		computeMedian(items, size);
 		left = new KdNode(level +1);
@@ -88,10 +88,9 @@ void KdNode::split(){
 		left->split();
 		right->split();
 		items.clear();
-	}else{
-		int i =10;
 	}
 }
+
 bool KdNode::intersect(Triangle &t){
 	return	(
 	        (min[0] <= t.max[0]) && (max[0] >= t.min[0]) &&
@@ -102,7 +101,7 @@ bool KdNode::intersect(Triangle &t){
 
 
 
-bool KdNode::intersect(Ray &ray){
+double KdNode::intersect(Ray &ray){
 
 	double tnear = -1e6;
 	double tfar = 1e6;
@@ -123,19 +122,33 @@ bool KdNode::intersect(Ray &ray){
 			tfar = t2;
 
 		if(tnear > tfar)
-			return false;
+			return DOUBLEMAX;
 		if(tfar < 0.0)
-			return false;
+			return DOUBLEMAX;
 	}
+	return tnear;
+}
+
+bool KdNode::traverse(Ray &ray){
 	bool result = false;
-	if(!left){
+	if(left){
+		double leftNear = left->intersect(ray);
+		double rightNear = right->intersect(ray);
+		if(rightNear == DOUBLEMAX) return left->traverse(ray);
+		if(leftNear == DOUBLEMAX) return right->traverse(ray);
+		if(rightNear < leftNear){
+			if(right->traverse(ray)) result = true;
+			else result = left->traverse(ray);
+		}else{
+			if(left->traverse(ray)) result = true;
+			else result = right->traverse(ray);
+		}
+
+	}else{
 		for(TriangleList::const_iterator iter = items.begin();iter != items.end(); iter++){
 			Triangle &t = *(*iter);
 			if(ray.intersect(t) == 1) result = true;
 		}
-	}else{
-		if(left->intersect(ray) == 1) result = true;
-		if(right->intersect(ray) == 1) result = true;
 	}
 	return result;
 }

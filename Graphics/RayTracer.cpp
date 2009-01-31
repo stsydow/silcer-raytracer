@@ -12,7 +12,7 @@ RayTracer::RayTracer(const OffModel &model):
 	model(model),
 	width(1280),
 	height(800),
-	pixelSize(1),
+	pixelSize(2),
 	camera(width,height,pixelSize),
 	image(width,height,pixelSize),
 	kdTree(NULL)
@@ -31,7 +31,7 @@ RayTracer::~RayTracer() {
 bool RayTracer::castRay(Ray &ray, int stage){
 	Vector lightDir(0,-1,0);
 	Vector color(1,1,1);
-	bool result = kdTree->intersect(ray);
+	bool result = kdTree->traverse(ray);
 	if(result){
 		double factor = -(ray.normal* lightDir);
 		if(factor > EPSILON){
@@ -39,7 +39,7 @@ bool RayTracer::castRay(Ray &ray, int stage){
 			ray.lightRay->origin = ray.hitpoint;
 			ray.lightRay->originTriangle = ray.destinationTriangle;
 			ray.lightRay->setDirection(-lightDir);
-			bool lightBlocked = kdTree->intersect(*ray.lightRay);
+			bool lightBlocked = kdTree->traverse(*ray.lightRay);
 			if(lightBlocked){
 				ray.incommingLight = color*0.2;
 			}else{
