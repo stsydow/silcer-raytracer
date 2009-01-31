@@ -31,6 +31,7 @@ public:
 	Ray *nextRay;
 	const Triangle *originTriangle;
 	const Triangle *destinationTriangle;
+	float uTex, vTex;
 };
 
 #endif /* RAY_H_ */

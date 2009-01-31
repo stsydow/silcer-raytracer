@@ -85,6 +85,8 @@ int Ray::intersect(const Triangle &T)
     destinationTriangle = &T;
     length = newLength;
     normal = (T.v[0]->normal + ( T.v[1]->normal  - T.v[0]->normal ) *s + (T.v[2]->normal  -  T.v[0]->normal )*t).normalize();
+    uTex = T.v[0]->textureCoord[0] + ( T.v[1]->textureCoord[0]  - T.v[0]->textureCoord[0] ) *s + (T.v[2]->textureCoord[0]  -  T.v[0]->textureCoord[0] )*t;
+    vTex = T.v[0]->textureCoord[1] + ( T.v[1]->textureCoord[1]  - T.v[0]->textureCoord[1] ) *s + (T.v[2]->textureCoord[1]  -  T.v[0]->textureCoord[1] )*t;
     return 1;                      // I is in T
 }
 

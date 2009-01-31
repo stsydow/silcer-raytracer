@@ -15,7 +15,7 @@ OffModel::OffModel(char* filename):
 	showNormals(OFF),
 	showTexture(ON),
 	doLighting(ON),
-	tex("saturncyl1.bmp")
+	tex("earth2.bmp")
 {
 	readOff(filename);
 	calculateTextureCoordinates();
@@ -31,8 +31,8 @@ void OffModel::draw()
 {
 	if (enabled){
 		glPushMatrix();
-		GLfloat _directionalVec[] = { 0.0, 0.0, 0.0, 1.0 };
-		GLfloat _ambientVec[] = { 0.1, 0.1, 0.1, 1.0 };
+		GLfloat _directionalVec[] = { 0.0, 4.0, 1.0, 1.0 };
+		GLfloat _ambientVec[] = { 0.1, 0.1, 0.2, 1.0 };
 		GLfloat _diffuseVec[] = { 0.5, 0.5, 0.5, 1.0 };
 		GLfloat _specularVec[] = { 1.0, 1.0, 1.0, 1.0 };
 		glLightfv(GL_LIGHT0, GL_POSITION, _directionalVec);
@@ -100,7 +100,7 @@ void OffModel::readOff(char* filename) {
 			int numEdges;
 			fscanf(file, "%i %i %i", &numVertices, &numTriangles, &numEdges);
 			vertices = new Vertex[numVertices];
-			triangles = new Triangle[numTriangles];
+			triangles = new Triangle[numTriangles + 1];
 			float x,y,z;
 			for(int i=0 ; i <numVertices; i++){
 				fscanf(file, "%f %f %f",&x, &y, &z);
@@ -144,6 +144,17 @@ void OffModel::readOff(char* filename) {
 				triangles[i] =  Triangle(vertices + k, vertices +l, vertices + m);
 			}
 			fclose (file);
+			Vertex *v1 = new Vertex(-100,0.16,-100);
+			Vertex *v2 = new Vertex(0,0.16,40);
+			Vertex *v3 = new Vertex(100,0.16,-100);
+			v1->textureCoord[0] = 0;
+			v1->textureCoord[1] = 0;
+			v2->textureCoord[0] = 0;
+			v2->textureCoord[1] = 1;
+			v3->textureCoord[0] = 1;
+			v3->textureCoord[1] = 1;
+			triangles[numTriangles] = Triangle(v1, v2, v3);
+			numTriangles ++;
 		}
 	}
 
