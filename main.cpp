@@ -164,10 +164,10 @@ int dataPainter(void *p)
 		//glEnable (GL_LINE_SMOOTH);	// Antialiasing fuer Linien einschalten
 
 		TransformGroup modelView;
-		modelView.transformation[13] = -0.5;
-		modelView.transformation[14] = 3;
+		modelView.transformation[13] = -0.3;
+		modelView.transformation[14] = 4;
 		//modelView.transformation.rotate(3.1415, y_Axes);
-		OffModel model("meshes/bunnysimple.off");
+		OffModel model("meshes/teapot.off");
 		tracer = new RayTracer(model);
 		modelView.addObj(&model);
 		modelView.addObj(&tracer->camera);
@@ -194,8 +194,8 @@ int dataPainter(void *p)
 			if(mouse.isClicked()){
 				int x, y;
 				mouse.getDelta(x,y);
-				modelView.transformation.rotate(x/30.0, y_Axes);
-				modelView.transformation.rotate(y/30.0, x_Axes);
+				modelView.transformation.rotate(x/100.0, y_Axes);
+				modelView.transformation.rotate(y/100.0, x_Axes);
 			}
 			console.setText(messageBuffer); //FIXME race condition?
 			Display.drawEverything();
@@ -204,7 +204,7 @@ int dataPainter(void *p)
 				SDL_CreateThread(renderSceneBottom, NULL);
 			}
 			SDL_PumpEvents();
-			SDL_Delay(100);
+			SDL_Delay(50);
 
 		}
 		SDL_WaitThread(events, NULL);

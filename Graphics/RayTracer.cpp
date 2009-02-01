@@ -10,7 +10,7 @@
 #include "../Data/constants.h"
 RayTracer::RayTracer(const OffModel &model):
 	model(model),
-	pixelSize(1.0),
+	pixelSize(1),
 	width(1280/pixelSize),
 	height(800/pixelSize),
 	size(height * width),
@@ -20,7 +20,6 @@ RayTracer::RayTracer(const OffModel &model):
 	running(false),
 	ready(false)
 {
-
 	TriangleList triangles;
 	for(int i =0 ; i <  model.numTriangles; i++){
 		triangles.push_back(model.triangles + i);
@@ -51,8 +50,8 @@ bool RayTracer::castRay(Ray &ray, int stage){;
 			Vector lightDir;
 			double length = 1;
 			if(light.pointSource){
-				length = (ray.origin - light.position).abs();
-				lightDir = (ray.origin - light.position).normalize();
+				length = (ray.hitpoint - light.position).abs();
+				lightDir = (ray.hitpoint - light.position).normalize();
 			}else{
 				lightDir = light.direction;
 			}
@@ -64,26 +63,26 @@ bool RayTracer::castRay(Ray &ray, int stage){;
 				ray.lightRay->originTriangle = ray.destinationTriangle;
 				ray.lightRay->setDirection(-lightDir);
 				bool lightBlocked = kdTree->traverse(*ray.lightRay);
-				if(!lightBlocked || (light.pointSource && ray.lightRay->length < length)){
+				if(!lightBlocked || (light.pointSource && ray.lightRay->length > length)){
 					double blinnTerm = (ray.lightRay->direction - ray.direction).normalize()* ray.normal;;
 					if(blinnTerm < 0) blinnTerm = 0;
-					blinnTerm = pow(blinnTerm , 100);
+					blinnTerm = pow(blinnTerm , 200);
 					for(int i = 0; i< 3;i++)
-						ray.incommingLight[i] += ((unsigned char *)pixel)[i]/255.0 * light.diffuseColor[i] *(factor/(length*length)) + light.specularColor[i] * blinnTerm;
+						ray.incommingLight[i] += ((unsigned char *)pixel)[i]/255.0 * light.diffuseColor[i] *factor*1.5/(0.25 + length*length + length) + light.specularColor[i] * blinnTerm/(0.25*length*length);
 				}
 
 			}
 			for(int i = 0; i< 3;i++)
 				ray.incommingLight[i] += ((unsigned char *)pixel)[i]/255.0 *  light.ambientColor[i];
 		}
-		if(stage < 3 && ray.direction * ray.normal <0 ){
+		if(stage < 4 && ray.direction * ray.normal <0 ){
 			ray.nextRay = new Ray();
 			ray.nextRay->origin = ray.hitpoint;
 			ray.nextRay->originTriangle = ray.destinationTriangle;
 			ray.nextRay->setDirection(ray.direction + ray.normal * (ray.normal*ray.direction * -2));
 			castRay(*ray.nextRay, stage +1);
 			for(int i = 0; i< 3;i++)
-				ray.incommingLight[i] += ((unsigned char *)pixel)[i]/255.0 *  (ray.nextRay->incommingLight[i] * 0.5);
+				ray.incommingLight[i] += ((unsigned char *)pixel)[i]/255.0 *  (ray.nextRay->incommingLight[i] * 0.4);
 		}
 	}
 	return result;

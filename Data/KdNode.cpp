@@ -93,9 +93,9 @@ void KdNode::split(){
 
 bool KdNode::intersect(Triangle &t){
 	return	(
-	        (min[0] <= t.max[0]) && (max[0] >= t.min[0]) &&
-	        (min[1] <= t.max[1]) && (max[1] >= t.min[1]) &&
-	        (min[2] <= t.max[2]) && (max[2] >= t.min[2])
+	        (min[0] <= t.max[0]+EPSILON) && (max[0]+EPSILON >= t.min[0]) &&
+	        (min[1] <= t.max[1]+EPSILON) && (max[1]+EPSILON >= t.min[1]) &&
+	        (min[2] <= t.max[2]+EPSILON) && (max[2]+EPSILON >= t.min[2])
 	    );
 }
 
@@ -130,17 +130,17 @@ bool KdNode::traverse(Ray &ray){
 		if(!left->intersect(ray, leftNear, leftFar)) return right->traverse(ray);
 		if(!right->intersect(ray, rightNear, rightFar)) return left->traverse(ray);
 		if(rightNear < leftNear){
-			ray.length = rightFar;
+			ray.length = rightFar+EPSILON;
 			if(right->traverse(ray)) result = true;
 			else {
 				ray.length = leftFar;
 				result = left->traverse(ray);
 			}
 		}else{
-			ray.length = leftFar;
+			ray.length = leftFar+EPSILON;
 			if(left->traverse(ray)) result = true;
 			else {
-				ray.length = rightFar;
+				ray.length = rightFar+EPSILON;
 				result = right->traverse(ray);
 			}
 		}

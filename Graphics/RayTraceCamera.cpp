@@ -30,28 +30,61 @@ void RayTraceCamera::updateView(){
 
 void RayTraceCamera::draw()
 {
+	GLfloat _directionalVec[] = { 0.0, 0.6, -0.4, 0.0 };
+	GLfloat _ambientVec[] = { 0.2, 0.1, 0.1, 1.0 };
+	GLfloat _diffuseVec[] = { 0.6, 0.4, 0.4, 1.0 };
+	GLfloat _specularVec[] = { 0.5, 0.4, 0.4, 1.0 };
+	glLightfv(GL_LIGHT0, GL_POSITION, _directionalVec);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, _diffuseVec);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, _ambientVec);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, _specularVec);
+
+	GLfloat _positionVec[] = { 0.0, 0.4, 1, 1 };
+	GLfloat _ambientVec2[] = { 0.0, 0.0, 0.0, 1.0 };
+	GLfloat _diffuseVec2[] = { 0.7, 0.5, 0.2, 1.0 };
+	GLfloat _specularVec2[] = { 0.5, 0.4, 0.3, 1.0 };
+	glLightfv(GL_LIGHT1, GL_POSITION, _positionVec);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, _diffuseVec2);
+	glLightfv(GL_LIGHT1, GL_AMBIENT, _ambientVec2);
+	glLightfv(GL_LIGHT1, GL_SPECULAR, _specularVec2);
 	if (record){
 		GLint viewport[4];
 		GLdouble modelview[16];
 		GLdouble projection[16];
 		Coordinate result;
 
+
 		glGetDoublev( GL_MODELVIEW_MATRIX, modelview );
 		glGetDoublev( GL_PROJECTION_MATRIX, projection );
 		glGetIntegerv( GL_VIEWPORT, viewport );
-		numLights = 4;
+		numLights = 2;
 		if(lights) delete [] lights;
-		lights = new Light[4];
+		lights = new Light[2];
+//		if(_directionalVec[3]){
+//			lights[0].position = Coordinate(_directionalVec[0],_directionalVec[1],_directionalVec[2]);
+//			lights[0].pointSource = true;
+//		}else{
+//			lights[0].direction = Vector(-_directionalVec[0],-_directionalVec[1],-_directionalVec[2]);
+//			lights[0].pointSource = false;
+//		}
+		if(_positionVec[3]){
+			lights[1].position = Coordinate(_positionVec[0],_positionVec[1],_positionVec[2]);
+			lights[1].pointSource = true;
+		}else{
+			lights[1].direction = Vector(-_positionVec[0],-_positionVec[1],-_positionVec[2]);
+			lights[1].pointSource = false;
+		}
+
 		float vec[4];
-		for(int i = 0; i <4; i++){
-			glGetLightfv(GL_LIGHT0 + i, GL_POSITION, vec);
-			if(vec[3]){
-				lights[i].position = Coordinate(vec[0], vec[1], vec[2]);
-				lights[i].pointSource = true;
-			}else{
-				lights[i].direction = Vector(-vec[0],-vec[1], -vec[2]);
-				lights[i].pointSource = false;
-			}
+		for(int i = 0; i <2; i++){
+			//glGetLightfv(GL_LIGHT0 + i, GL_POSITION, vec);
+//			if(vec[3]){
+//				lights[i].position = Coordinate(vec[0], vec[1], vec[2]);
+//				lights[i].pointSource = true;
+//			}else{
+//				lights[i].direction = Vector(-vec[0],-vec[1], -vec[2]);
+//				lights[i].pointSource = false;
+//			}
 			glGetLightfv(GL_LIGHT0 + i, GL_DIFFUSE, vec);
 			lights[i].diffuseColor = Vector(vec[0], vec[1], vec[2]);
 			glGetLightfv(GL_LIGHT0 + i, GL_SPECULAR, vec);

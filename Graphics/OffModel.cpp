@@ -15,7 +15,7 @@ OffModel::OffModel(char* filename):
 	showNormals(OFF),
 	showTexture(ON),
 	doLighting(ON),
-	tex("earth2.bmp")
+	tex("saturncyl1.bmp")
 {
 	readOff(filename);
 	calculateTextureCoordinates();
@@ -31,14 +31,6 @@ void OffModel::draw()
 {
 	if (enabled){
 		glPushMatrix();
-		GLfloat _directionalVec[] = { 0.0, 4.0, 1.0, 1.0 };
-		GLfloat _ambientVec[] = { 0.1, 0.1, 0.2, 1.0 };
-		GLfloat _diffuseVec[] = { 0.5, 0.5, 0.5, 1.0 };
-		GLfloat _specularVec[] = { 1.0, 1.0, 1.0, 1.0 };
-		glLightfv(GL_LIGHT0, GL_POSITION, _directionalVec);
-		glLightfv(GL_LIGHT0, GL_DIFFUSE, _diffuseVec);
-		glLightfv(GL_LIGHT0, GL_AMBIENT, _ambientVec);
-		glLightfv(GL_LIGHT0, GL_SPECULAR, _specularVec);
 		glEnable(GL_DEPTH_TEST);
 		glColor4f(1,1,1,0.7);
 		glBindTexture(GL_TEXTURE_2D, tex.getTexture());
@@ -144,16 +136,19 @@ void OffModel::readOff(char* filename) {
 				triangles[i] =  Triangle(vertices + k, vertices +l, vertices + m);
 			}
 			fclose (file);
-			Vertex *v1 = new Vertex(-100,0.16,-100);
-			Vertex *v2 = new Vertex(0,0.16,40);
-			Vertex *v3 = new Vertex(100,0.16,-100);
-			v1->textureCoord[0] = 0;
-			v1->textureCoord[1] = 0;
-			v2->textureCoord[0] = 0;
-			v2->textureCoord[1] = 1;
-			v3->textureCoord[0] = 1;
-			v3->textureCoord[1] = 1;
+			Vertex *v1 = new Vertex(-50,0.0,-50);
+			Vertex *v2 = new Vertex(0,0.0,40);
+			Vertex *v3 = new Vertex(50,0.0,-50);
 			triangles[numTriangles] = Triangle(v1, v2, v3);
+			v1->calculateNormal();
+			v2->calculateNormal();
+			v3->calculateNormal();
+			v1->textureCoord[0] = 0.3;
+			v1->textureCoord[1] = 0.3;
+			v2->textureCoord[0] = 0.3;
+			v2->textureCoord[1] = 0.6;
+			v3->textureCoord[0] = 0.6;
+			v3->textureCoord[1] = 0.6;
 			numTriangles ++;
 		}
 	}
