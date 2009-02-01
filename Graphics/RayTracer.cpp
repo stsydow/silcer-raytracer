@@ -10,7 +10,7 @@
 #include "../Data/constants.h"
 RayTracer::RayTracer(const OffModel &model):
 	model(model),
-	pixelSize(1),
+	pixelSize(3),
 	width(1280/pixelSize),
 	height(800/pixelSize),
 	size(height * width),
@@ -98,9 +98,11 @@ void RayTracer::render(float start, float end){
 	for(int i =(int)(size*start) ; i <  (int)(size *end); i++){
 		r = camera.pixelRays +i;
 		if(castRay(*r, 0)) {
-			p.r = (r->incommingLight[0] < 1)? 255* r->incommingLight[0] : 255;
-			p.g = (r->incommingLight[1] < 1)? 255* r->incommingLight[1] : 255;
-			p.b = (r->incommingLight[2] < 1)? 255* r->incommingLight[2] : 255;
+			float hue = (1.0f - exp(-r->incommingLight.abs()))/ max(r->incommingLight[0],max(r->incommingLight[1],r->incommingLight[2]));;
+
+			p.r = 255*r->incommingLight[0]* hue;
+			p.g = 255*r->incommingLight[1]* hue;
+			p.b = 255*r->incommingLight[2]* hue;
 			p.unused = 255;
 			pixels[i] = p;
 		}
