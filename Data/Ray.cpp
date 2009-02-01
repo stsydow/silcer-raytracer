@@ -32,35 +32,29 @@ Ray::~Ray() {
 int Ray::intersect(const Triangle &T)
 {
 	if(originTriangle && originTriangle == &T) return 0;
-	Coordinate &tOrigin =  T.v[0]->position;
-    Vector u = T.a;
-    Vector v = T.b;
-    Vector n = T.faceNormal;
-    Vector w0 = origin - tOrigin;
-    float a = -(n*w0);
-    float b = n*direction;
+    float a = -(T.faceNormal*(origin - T.v[0]->position));
+    float b = T.faceNormal*direction;
     if (fabs(b) < EPSILON) {     // ray is parallel to triangle plane
         if (a == 0)                // ray lies in triangle plane
             return 2;
         else return 0;             // ray disjoint from plane
     }
-
     // get intersect point of ray with triangle plane
-    float r = a / b;
-    if (r < 0.0)                   // ray goes away from triangle
+    float newLength = a / b;
+    if (newLength < EPSILON || length < newLength)                   // ray goes away from triangle or an other Triangle is in the way
         return 0;                  // => no intersect
     // for a segment, also test if (r > 1.0) => no intersect
 
-    Coordinate intersection = origin + direction*r;           // intersect point of ray and plane
+    Coordinate intersection = origin + direction*newLength;           // intersect point of ray and plane
 
     // inside T?
     float    uu, uv, vv, wu, wv, D;
-    uu = u*u;
-    uv = u*v;
-    vv = v*v;
-    Vector w = intersection - tOrigin;
-    wu = w*u;
-    wv = w*v;
+    uu = T.a*T.a;
+    uv = T.a*T.b;
+    vv = T.b*T.b;
+    Vector w = intersection - T.v[0]->position;
+    wu = w*T.a;
+    wv = w*T.b;
     D = uv * uv - uu * vv;
 
     // get and test parametric coords
@@ -71,15 +65,6 @@ int Ray::intersect(const Triangle &T)
     t = (uv * wu - uu * wv) / D;
     if (t < 0.0 || (s + t) > 1.0)  // is outside T
         return 0;
-
-    double newLength = (intersection -origin).abs();
-
-    if(EPSILON > newLength){
-    	return 0; // to near
-    }
-    if(length < newLength){
-    	return 0; // an other Triangle is in the way
-    }
 
     hitpoint = intersection;
     destinationTriangle = &T;

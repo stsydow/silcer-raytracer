@@ -6,17 +6,8 @@
  */
 
 #include "Coordinate.h"
-#include <string.h>
 #include "constants.h"
 #include <math.h>
-
-Coordinate::Coordinate() {}
-
-Coordinate::~Coordinate() {}
-
-Coordinate::Coordinate(const Coordinate &point){
-	memcpy(X, point.X, sizeof(double)*3);
-}
 
 Coordinate::Coordinate(double x, double y, double z){
 	X[0] = x;
@@ -25,31 +16,10 @@ Coordinate::Coordinate(double x, double y, double z){
 }
 
 Coordinate& Coordinate::operator=(const Coordinate& value){
-	memcpy(X, value.X, sizeof(double)*3);
+	X[0] = value[0];
+	X[1] = value[1];
+	X[2] = value[2];
 	return *this;
-}
-
-const Coordinate Coordinate::operator+(const Vector& value)const{
-	Coordinate result(*this);
-	result[0] += value[0];
-	result[1] += value[1];
-	result[2] += value[2];
-	return result;
-}
-const Coordinate Coordinate::operator-(const Vector& value)const{
-	Coordinate result(*this);
-	result[0] -= value[0];
-	result[1] -= value[1];
-	result[2] -= value[2];
-	return result;
-}
-
-const Vector Coordinate::operator-(const Coordinate& value)const{
-	Vector result(X);
-	result[0] -= value[0];
-	result[1] -= value[1];
-	result[2] -= value[2];
-	return result;
 }
 
 const double Coordinate::abs()const{
@@ -57,5 +27,7 @@ const double Coordinate::abs()const{
 }
 
 void Coordinate::zero(){
-	memset(X, 0, sizeof(double)*3);
+	X[0] = 0;
+	X[1] = 0;
+	X[2] = 0;
 }

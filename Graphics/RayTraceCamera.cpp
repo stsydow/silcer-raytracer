@@ -30,7 +30,7 @@ void RayTraceCamera::updateView(){
 
 void RayTraceCamera::draw()
 {
-	GLfloat _directionalVec[] = { 0.0, 0.9, 0.1, 0.0 };
+	GLfloat _directionalVec[] = { 0.0, 1.0, 0.0, 0.0 };
 	GLfloat _ambientVec[] = { 0.0, 0.2, 0.0, 1.0 };
 	GLfloat _diffuseVec[] = { 0.0, 0.7, 0.0, 1.0 };
 	GLfloat _specularVec[] = { 0.0, 0.7, 0.0, 1.0 };

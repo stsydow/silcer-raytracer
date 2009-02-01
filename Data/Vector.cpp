@@ -6,18 +6,7 @@
  */
 
 #include "Vector.h"
-#include <string.h>
-#include <math.h>
 
-Vector::Vector(){
-}
-
-Vector::Vector(const Vector& value){
-	memcpy(X, value.X, sizeof(double)*3);
-}
-Vector::Vector(const double value[3]){
-	memcpy(X, value, sizeof(double)*3);
-}
 Vector::Vector(double x, double y, double z){
 	X[0] = x;
 	X[1] = y;
@@ -25,7 +14,9 @@ Vector::Vector(double x, double y, double z){
 }
 
 Vector& Vector::operator=(const Vector& value){
-	memcpy(X, value.X, sizeof(double)*3);
+	X[0] = value[0];
+	X[1] = value[1];
+	X[2] = value[2];
 	return *this;
 }
 
@@ -61,18 +52,6 @@ const Vector Vector::times(const Vector& value)const{
 	return result;
 }
 
-const double Vector::abs()const{
-	return  sqrt(X[e_X] * X[e_X] + X[e_Y] * X[e_Y] + X[e_Z] * X[e_Z]);
-}
-
-const Vector Vector::operator*(double factor)const{
-	Vector result;
-	result[e_X] = X[e_X] * factor;
-	result[e_Y] = X[e_Y] * factor;
-	result[e_Z] = X[e_Z] * factor;
-	return result;
-}
-
 const Vector Vector::normalize()const{
 	Vector result(*this);
 	double length = abs();
@@ -104,5 +83,7 @@ Vector &Vector::operator*=(double value){
 }
 
 void Vector::zero(){
-	memset(X, 0, 3*sizeof(double));
+	X[0] = 0;
+	X[1] = 0;
+	X[2] = 0;
 }

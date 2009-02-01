@@ -8,10 +8,9 @@
 #include "RayTracer.h"
 #include <math.h>
 #include "../Data/constants.h"
-
-RayTracer::RayTracer(const OffModel &model):
+RayTracer::RayTracer(OffModel &model):
 	model(model),
-	pixelSize(4),
+	pixelSize(3),
 	width(1280/pixelSize),
 	height(800/pixelSize),
 	size(height * width),
@@ -44,7 +43,7 @@ bool RayTracer::castRay(Ray &ray, int stage){;
 	bool result = kdTree->traverse(ray);
 	unsigned int *pixel;
 	if(result){
-		double dir = (ray.normal* ray.direction < 0.0)?  1.0: (-1.0);
+		if(ray.direction * ray.normal >0) ray.normal *= -1;
 		pixel = (unsigned int*)texture->pixels + (int)(texture->w *ray.uTex + texture->w *(int)(texture->h*ray.vTex) );
 		ray.incommingLight.zero();
 		for(int i = 0; i < camera.numLights; i++){
@@ -57,7 +56,7 @@ bool RayTracer::castRay(Ray &ray, int stage){;
 			}else{
 				lightDir = light.direction;
 			}
-			double factor= -(ray.normal* lightDir*dir);
+			double factor= -(ray.normal* lightDir);
 			if(factor > EPSILON){
 				ray.lightRay = new Ray();
 				ray.lightRay->length = length;
@@ -66,7 +65,7 @@ bool RayTracer::castRay(Ray &ray, int stage){;
 				ray.lightRay->setDirection(-lightDir);
 				bool lightBlocked = kdTree->traverse(*ray.lightRay);
 				if(!lightBlocked || (light.pointSource && ray.lightRay->length > length)){
-					double blinnTerm = (ray.lightRay->direction - ray.direction).normalize()* ray.normal*dir;;
+					double blinnTerm = (ray.lightRay->direction - ray.direction).normalize()* ray.normal;
 					if(blinnTerm < 0) blinnTerm = 0;
 					blinnTerm = pow(blinnTerm , 200);
 					for(int i = 0; i< 3;i++)
@@ -81,7 +80,7 @@ bool RayTracer::castRay(Ray &ray, int stage){;
 			ray.nextRay = new Ray();
 			ray.nextRay->origin = ray.hitpoint;
 			ray.nextRay->originTriangle = ray.destinationTriangle;
-			ray.nextRay->setDirection(ray.direction + ray.normal * (ray.normal*ray.direction * (2*dir)));
+			ray.nextRay->setDirection(ray.direction + ray.normal * (ray.normal*ray.direction * -2));
 			castRay(*ray.nextRay, stage +1);
 			for(int i = 0; i< 3;i++)
 				ray.incommingLight[i] += ((unsigned char *)pixel)[i]/255.0 *  (ray.nextRay->incommingLight[i] * 0.4);
@@ -107,10 +106,17 @@ void RayTracer::render(float start, float end){
 			p.b = 255*r->incommingLight[2]* hue;
 			p.unused = 255;
 			pixels[i] = p;
+		}else{
+			p.r = 0;
+			p.g = 0;
+			p.b = 0;
+			p.unused = 0;
+			pixels[i] = p;
 		}
 	}
 	save("test.bmp");
 	running = false;
+	model.doLighting = 1;
 }
 
 void RayTracer::record(){

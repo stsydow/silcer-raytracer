@@ -13,13 +13,13 @@
 
 class RayTracer{
 public:
-	RayTracer(const OffModel &model);
+	RayTracer(OffModel &model);
 	virtual ~RayTracer();
 	bool castRay(Ray &ray, int stage);
 	void render(float start = 0, float end= 1);
 	void record();
 	void save(char *filename);
-	const OffModel &model;
+	OffModel &model;
 	double pixelSize;
 	int width, height, size;
 	RayTraceCamera camera;

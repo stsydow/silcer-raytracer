@@ -14,6 +14,7 @@
 #include <sstream>
 #include <SDL/SDL_thread.h>
 #include "Graphics/Mouse.h"
+#include "valgrind/callgrind.h"
 
 using namespace std;
 Mouse mouse;
@@ -23,7 +24,7 @@ Perspective *view;
 char messageBuffer[100];
 char *messageBufferEnd = messageBuffer;
 RayTracer *tracer;
-
+bool resetView;
 Vector x_Axes(1,0,0);
 Vector y_Axes(0,1,0);
 Vector z_Axes(0,0,1);
@@ -48,7 +49,9 @@ void interpretConsole(){
 
 int renderSceneTop(void *p)
 {
+	CALLGRIND_START_INSTRUMENTATION
 	tracer->render(0, 0.5);
+	CALLGRIND_STOP_INSTRUMENTATION
 	return 0;
 }
 
@@ -77,6 +80,8 @@ int eventProcessor(void *p)
 					quit = true;
 				}else if(myEvent->key.keysym.sym == 'r'){
 					tracer->record();
+				}else if(myEvent->key.keysym.sym == 'v'){
+					resetView = true;
 				}else{
 					if(messageBufferEnd - messageBuffer < 100)
 					{
@@ -158,8 +163,9 @@ int dataPainter(void *p)
 
 	    //
 		glEnable(GL_LIGHT0);
+		glEnable(GL_LIGHT1);
 		glEnable(GL_LIGHT_MODEL_LOCAL_VIEWER);
-		//glShadeModel(GL_SMOOTH);
+		glShadeModel(GL_SMOOTH);
 		//glEnable (GL_POINT_SMOOTH);	// Antialiasing fuer Punkte einschalten
 		//glEnable (GL_LINE_SMOOTH);	// Antialiasing fuer Linien einschalten
 
@@ -167,7 +173,7 @@ int dataPainter(void *p)
 		modelView.transformation[13] = -0.3;
 		modelView.transformation[14] = 4;
 		//modelView.transformation.rotate(3.1415, y_Axes);
-		OffModel model("meshes/teapot.off");
+		OffModel model("meshes/bunnysimple.off");
 		tracer = new RayTracer(model);
 		modelView.addObj(&model);
 		modelView.addObj(&tracer->camera);
@@ -177,6 +183,7 @@ int dataPainter(void *p)
 
 //		image.add(&tracer->image);
 
+		Matrix lastView;
 		long ticks = SDL_GetTicks();
 		int i = 0;
 		while(!quit)
@@ -190,6 +197,10 @@ int dataPainter(void *p)
 				ticks = SDL_GetTicks();
 			}
 			++i;
+			if(resetView){
+				resetView = false;
+				modelView.transformation = lastView;
+			}
 
 			if(mouse.isClicked()){
 				int x, y;
@@ -200,6 +211,7 @@ int dataPainter(void *p)
 			console.setText(messageBuffer); //FIXME race condition?
 			Display.drawEverything();
 			if(!tracer->running && tracer->ready){
+				lastView = modelView.transformation;
 				SDL_CreateThread(renderSceneTop, NULL);
 				SDL_CreateThread(renderSceneBottom, NULL);
 			}
@@ -224,6 +236,7 @@ int dataPainter(void *p)
 
 int main(int argc, char* argv[])
 {
+	CALLGRIND_STOP_INSTRUMENTATION
 	SDL_Thread* draw;
 	consoleMtx = SDL_CreateMutex();
 	try
