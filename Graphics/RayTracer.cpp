@@ -10,7 +10,7 @@
 #include "../Data/constants.h"
 RayTracer::RayTracer(OffModel &model):
 	model(model),
-	pixelSize(3),
+	pixelSize(1),
 	width(1280/pixelSize),
 	height(800/pixelSize),
 	size(height * width),
@@ -39,7 +39,7 @@ RayTracer::~RayTracer() {
 	//TODO free kdTree
 }
 
-bool RayTracer::castRay(Ray &ray, int stage){;
+bool RayTracer::castRay(Ray &ray, int stage){
 	bool result = kdTree->traverse(ray);
 	unsigned int *pixel;
 	if(result){
@@ -86,6 +86,31 @@ bool RayTracer::castRay(Ray &ray, int stage){;
 				ray.incommingLight[i] += ((unsigned char *)pixel)[i]/255.0 *  (ray.nextRay->incommingLight[i] * 0.4);
 		}
 	}
+	if(stage == 0){
+		for(int i = 0; i < camera.numLights; i++){
+			Light &light = camera.lights[i];
+			Vector lightDir;
+			double length = DOUBLEMAX;
+			if(light.pointSource){
+				length = (ray.origin - light.position).abs();
+				lightDir = (ray.origin - light.position).normalize();
+			}else{
+				lightDir = light.direction;
+			}
+			double factor= -(ray.direction* lightDir);
+			if(factor > 0.5 && (!result || length < ray.length)){
+				if(!result){
+					ray.incommingLight.zero();
+					ray.length = length;
+					ray.hitpoint = ray.origin + ray.direction*length;
+				}
+				for(int j = 0; j< 3;j++){
+					ray.incommingLight[j] += pow(factor,10000)*light.diffuseColor[j];
+					result = true;
+				}
+			}
+		}
+	}
 	return result;
 }
 
@@ -98,21 +123,18 @@ void RayTracer::render(float start, float end){
 	Ray *r;
 	for(int i =(int)(size*start) ; i <  (int)(size *end); i++){
 		r = camera.pixelRays +i;
-		if(castRay(*r, 0)) {
-			float hue = (1.0f - exp(-r->incommingLight.abs()))/ max(r->incommingLight[0],max(r->incommingLight[1],r->incommingLight[2]));;
+		SDL_LockMutex(r->lock);
+		r->incommingLight.zero();
+		castRay(*r, 0);
+		float hue = (1.0f - exp(-r->incommingLight.abs()))/ max(r->incommingLight[0],max(r->incommingLight[1],r->incommingLight[2]));
 
-			p.r = 255*r->incommingLight[0]* hue;
-			p.g = 255*r->incommingLight[1]* hue;
-			p.b = 255*r->incommingLight[2]* hue;
-			p.unused = 255;
-			pixels[i] = p;
-		}else{
-			p.r = 0;
-			p.g = 0;
-			p.b = 0;
-			p.unused = 0;
-			pixels[i] = p;
-		}
+		p.r = 255*r->incommingLight[0]* hue;
+		p.g = 255*r->incommingLight[1]* hue;
+		p.b = 255*r->incommingLight[2]* hue;
+		p.unused = 255;
+		pixels[i] = p;
+
+		SDL_UnlockMutex(r->lock);
 	}
 	save("test.bmp");
 	running = false;

@@ -60,13 +60,13 @@ void RayTraceCamera::draw()
 		numLights = 2;
 		if(lights) delete [] lights;
 		lights = new Light[2];
-//		if(_directionalVec[3]){
-//			lights[0].position = Coordinate(_directionalVec[0],_directionalVec[1],_directionalVec[2]);
-//			lights[0].pointSource = true;
-//		}else{
-//			lights[0].direction = Vector(-_directionalVec[0],-_directionalVec[1],-_directionalVec[2]);
-//			lights[0].pointSource = false;
-//		}
+		if(_directionalVec[3]){
+			lights[0].position = Coordinate(_directionalVec[0],_directionalVec[1],_directionalVec[2]);
+			lights[0].pointSource = true;
+		}else{
+			lights[0].direction = Vector(-_directionalVec[0],-_directionalVec[1],-_directionalVec[2]);
+			lights[0].pointSource = false;
+		}
 		if(_positionVec[3]){
 			lights[1].position = Coordinate(_positionVec[0],_positionVec[1],_positionVec[2]);
 			lights[1].pointSource = true;

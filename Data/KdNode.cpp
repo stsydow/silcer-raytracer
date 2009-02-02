@@ -50,13 +50,13 @@ void KdNode::computeMedian(const TriangleList &triangles, int size){
 			}
 		}
 		decisionSet.sort();
-		std::list<double>::iterator median = decisionSet.begin();
-		for(int i = 0; i < decisionSetSize/2; i++) median++;
+//		std::list<double>::iterator median = decisionSet.begin();
+//		for(int i = 0; i < decisionSetSize/2; i++) median++;
 		double minValue = *decisionSet.begin();
 		double maxValue = *(--decisionSet.end());
 		if((max[dimension] - maxValue) > (max[dimension] - min[dimension])/2) splitValue = maxValue;
 		else if((minValue - min[dimension]) > (max[dimension] - min[dimension])/2) splitValue = minValue;
-		else splitValue = (*median);
+		else 		splitValue = (min[dimension] + max[dimension])/2;//splitValue = (*median);
 }
 
 void KdNode::split(){

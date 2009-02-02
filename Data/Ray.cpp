@@ -15,13 +15,19 @@ Ray::Ray():
 	lightRay(NULL),
 	nextRay(NULL),
 	originTriangle(NULL),
-	destinationTriangle(NULL){
+	destinationTriangle(NULL)
+{
 	hitpoint.zero();
 	incommingLight.zero();
+	lock = SDL_CreateMutex();
 }
 
 Ray::~Ray() {
-	// TODO Auto-generated destructor stub
+
+	SDL_LockMutex(lock);
+	if(lightRay) delete lightRay;
+	if(nextRay) delete nextRay;
+	SDL_DestroyMutex(lock);
 }
 
 
@@ -81,6 +87,7 @@ void Ray::setDirection(const Vector &value){
 }
 
 void Ray::reset(){
+	SDL_LockMutex(lock);
 	if(lightRay) delete lightRay;
 	if(nextRay) delete nextRay;
 	length = DOUBLEMAX;
@@ -90,4 +97,5 @@ void Ray::reset(){
 	destinationTriangle = NULL;
 	hitpoint.zero();
 	incommingLight.zero();
+	SDL_UnlockMutex(lock);
 }

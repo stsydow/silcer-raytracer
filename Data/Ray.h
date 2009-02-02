@@ -11,6 +11,8 @@
 #include "Vector.h"
 #include "Coordinate.h"
 #include "Triangle.h"
+#include <SDL/SDL_thread.h>
+
 class Ray;
 class Ray {
 public:
@@ -32,6 +34,6 @@ public:
 	const Triangle *originTriangle;
 	const Triangle *destinationTriangle;
 	float uTex, vTex;
+	SDL_mutex *lock;
 };
-
 #endif /* RAY_H_ */
