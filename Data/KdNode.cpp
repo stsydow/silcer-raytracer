@@ -99,10 +99,10 @@ bool KdNode::intersect(Triangle &t){
 	    );
 }
 
-bool KdNode::intersect(Ray &ray, double &near, double &far){
+bool KdNode::intersect(Ray &ray, double &near_, double &far_){
 
-	near = -DOUBLEMAX;
-	far = DOUBLEMAX;
+	near_ = -DOUBLEMAX;
+	far_ = DOUBLEMAX;
 	double t1;
 	double t2;
 	double temp;
@@ -115,10 +115,10 @@ bool KdNode::intersect(Ray &ray, double &near, double &far){
 			t1 = t2;
 			t2 = temp;
 		}
-		if(t1 > near) near = t1;
-		if(t2 < far) far = t2;
-		if(near > far) return false;
-		if(far < 0.0) return false;
+		if(t1 > near_) near_ = t1;
+		if(t2 < far_) far_ = t2;
+		if(near_ > far_) return false;
+		if(far_ < 0.0) return false;
 	}
 	return true;
 }

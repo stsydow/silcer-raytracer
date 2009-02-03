@@ -14,7 +14,7 @@
 #include <sstream>
 #include <SDL/SDL_thread.h>
 #include "Graphics/Mouse.h"
-#include "valgrind/callgrind.h"
+//#include "valgrind/callgrind.h"
 
 using namespace std;
 Mouse mouse;
@@ -25,9 +25,6 @@ char messageBuffer[100];
 char *messageBufferEnd = messageBuffer;
 RayTracer *tracer;
 bool resetView;
-Vector x_Axes(1,0,0);
-Vector y_Axes(0,1,0);
-Vector z_Axes(0,0,1);
 
 string IntToString(int i)
 {
@@ -49,9 +46,9 @@ void interpretConsole(){
 
 int renderSceneTop(void *p)
 {
-	CALLGRIND_START_INSTRUMENTATION
+	//CALLGRIND_START_INSTRUMENTATION
 	tracer->render(0, 0.5);
-	CALLGRIND_STOP_INSTRUMENTATION
+	//CALLGRIND_STOP_INSTRUMENTATION
 	return 0;
 }
 
@@ -124,6 +121,9 @@ int eventProcessor(void *p)
 
 int dataPainter(void *p)
 {
+	Vector x_Axes(1,0,0);
+	Vector y_Axes(0,1,0);
+	Vector z_Axes(0,0,1);
 	SDL_Thread* events;
 	try
 	{
@@ -172,7 +172,7 @@ int dataPainter(void *p)
 		TransformGroup modelView;
 		modelView.transformation[13] = -0.3;
 		modelView.transformation[14] = 4;
-		//modelView.transformation.rotate(3.1415, y_Axes);
+		modelView.transformation.rotate(3.1415/8, y_Axes);
 		OffModel model("meshes/bunnysimple.off");
 		tracer = new RayTracer(model);
 		modelView.addObj(&model);
@@ -205,8 +205,8 @@ int dataPainter(void *p)
 			if(mouse.isClicked()){
 				int x, y;
 				mouse.getDelta(x,y);
-				modelView.transformation.rotate(x/100.0, y_Axes);
-				modelView.transformation.rotate(y/100.0, x_Axes);
+				if(x != 0)modelView.transformation.rotate(x/100.0, y_Axes);
+				if(y != 0)modelView.transformation.rotate(y/100.0, x_Axes);
 			}
 			console.setText(messageBuffer); //FIXME race condition?
 			Display.drawEverything();
@@ -236,7 +236,7 @@ int dataPainter(void *p)
 
 int main(int argc, char* argv[])
 {
-	CALLGRIND_STOP_INSTRUMENTATION
+	//CALLGRIND_STOP_INSTRUMENTATION
 	SDL_Thread* draw;
 	consoleMtx = SDL_CreateMutex();
 	try

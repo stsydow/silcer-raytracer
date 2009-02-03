@@ -20,7 +20,7 @@ public:
 	KdNode(const TriangleList &triangles, int size);
 	virtual ~KdNode();
 	void split();
-	bool intersect(Ray &ray, double &near, double &far);
+	bool intersect(Ray &ray, double &near_, double &far_);
 	bool intersect(Triangle &t);
 	bool traverse(Ray &ray);
 	virtual void draw();
