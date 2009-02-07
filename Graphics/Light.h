@@ -10,14 +10,18 @@
 #include "../Data/Coordinate.h"
 class Light {
 public:
-	Light();
-	virtual ~Light();
+	Light():
+		position(0,0,0),
+		direction(0,0,0),
+		pointSource(false),
+		ambient(false)
+	{};
+	virtual ~Light(){};
 	Coordinate position;
 	Vector direction;
-	Vector diffuseColor;
-	Vector specularColor;
-	Vector ambientColor;
+	Vector color;
 	bool pointSource;
+	bool ambient;
 };
 
 #endif /* LIGHT_H_ */

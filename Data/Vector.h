@@ -28,29 +28,29 @@ public:
 	inline double operator[](int i) const{return X[i];}
 
 	Vector& operator=(const Vector& value);
-	const Vector operator+(const Vector& value)const;
-	const Vector operator-(const Vector& value)const;
-	const Vector operator-()const;
+	Vector operator+(const Vector& value)const;
+	Vector operator-(const Vector& value)const;
+	Vector operator-()const;
 	inline double operator*(const Vector& value)const {
 		return  X[e_X] * value[e_X]
 		      + X[e_Y] * value[e_Y]
 		      + X[e_Z] * value[e_Z];
 	}
-	inline const Vector operator*(double factor)const{
-		Vector result;
-		result[e_X] = X[e_X] * factor;
-		result[e_Y] = X[e_Y] * factor;
-		result[e_Z] = X[e_Z] * factor;
-		return result;
+	inline Vector operator*(double factor)const{
+		return  Vector(X[e_X] * factor,
+						X[e_Y] * factor,
+						X[e_Z] * factor);
 	}
-	const Vector times(const Vector& value)const;
+	Vector times(const Vector& value)const;
 	inline double abs()const{
-		return  sqrt(
-				X[e_X] * X[e_X] +
-				X[e_Y] * X[e_Y] +
-				X[e_Z] * X[e_Z]);
+		return  sqrt(X[e_X] * X[e_X] +
+					X[e_Y] * X[e_Y] +
+					X[e_Z] * X[e_Z]);
 	}
-	const Vector normalize()const;
+	inline Vector componentProduct(const Vector& value)const{
+		return Vector(X[e_X] * value[e_X], X[e_Y] * value[e_Y],	X[e_Z] * value[e_Z]);
+	}
+	Vector normalize()const;
 	inline operator const double *const() const { return X;}
 	Vector &operator+=(const Vector &value);
 	Vector &operator-=(const Vector &value);

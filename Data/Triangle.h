@@ -9,6 +9,7 @@
 #define TRIANGLE_H_
 
 #include "Vertex.h"
+#include "Material.h"
 
 typedef struct plane {
 	float a,b,c,d;
@@ -26,6 +27,7 @@ public:
 	Vertex* v[3];
 	Vector a, b;
 	Coordinate min, max, center;
+	Material *material;
 };
 
 #endif /* TRIANGLE_H_ */

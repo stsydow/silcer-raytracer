@@ -14,9 +14,12 @@
 OffModel::OffModel(char* filename):
 	showNormals(OFF),
 	showTexture(ON),
-	doLighting(ON),
-	tex("saturncyl1.bmp")
+	doLighting(ON)
 {
+	material.color = Vector(1,1,1);
+	material.reflectance = 0.5;
+	material.specularity = 200;
+	material.texture = new Texture("texture.bmp");
 	readOff(filename);
 	calculateTextureCoordinates();
 }
@@ -33,29 +36,29 @@ void OffModel::draw()
 		glPushMatrix();
 		glEnable(GL_DEPTH_TEST);
 		glColor4f(1,1,1,0.7);
-		glBindTexture(GL_TEXTURE_2D, tex.getTexture());
+		if(material.texture) glBindTexture(GL_TEXTURE_2D, material.texture->getTexture());
 		if(doLighting) glEnable(GL_LIGHTING);
-		if(showTexture)glEnable(GL_TEXTURE_2D);
+		if(material.texture && showTexture)glEnable(GL_TEXTURE_2D);
 		glBegin(GL_TRIANGLES);
 		Vertex * v;
 		for (int i = 0; i < numTriangles;  i++) {
 				v = triangles[i].v[0];
-				if(showTexture)glTexCoord2fv(v->textureCoord);
+				if(material.texture && showTexture)glTexCoord2fv(v->textureCoord);
 				glNormal3dv(v->normal);
 				glVertex3dv(v->position);
 
 				v = triangles[i].v[1];
-				if(showTexture)glTexCoord2fv(v->textureCoord);
+				if(material.texture && showTexture)glTexCoord2fv(v->textureCoord);
 				glNormal3dv(v->normal);
 				glVertex3dv(v->position);
 
 				v = triangles[i].v[2];
-				if(showTexture)glTexCoord2fv(v->textureCoord);
+				if(material.texture && showTexture)glTexCoord2fv(v->textureCoord);
 				glNormal3dv(v->normal);
 				glVertex3dv(v->position);
 			}
 		glEnd();
-		if(showTexture)glDisable(GL_TEXTURE_2D);
+		if(material.texture && showTexture)glDisable(GL_TEXTURE_2D);
 
 	    if(doLighting) glDisable(GL_LIGHTING);
 
@@ -134,12 +137,14 @@ void OffModel::readOff(char* filename) {
 				fscanf(file, "%d %d %d %d", &n, &k, &l, &m);
 				assert(n == 3);
 				triangles[i] =  Triangle(vertices + k, vertices +l, vertices + m);
+				triangles[i].material = &material;
 			}
 			fclose (file);
 			Vertex *v1 = new Vertex(-50,0.0,-50);
 			Vertex *v2 = new Vertex(0,0.0,40);
 			Vertex *v3 = new Vertex(50,0.0,-50);
 			triangles[numTriangles] = Triangle(v1, v2, v3);
+			triangles[numTriangles].material = &material;
 			v1->calculateNormal();
 			v2->calculateNormal();
 			v3->calculateNormal();

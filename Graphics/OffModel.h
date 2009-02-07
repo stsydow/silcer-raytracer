@@ -30,7 +30,7 @@ public:
 	int numTriangles;
 	Vertex* vertices;
 	Triangle* triangles;
-	Texture tex;
+	Material material;
 private:
 
 	void readOff(char* filename);

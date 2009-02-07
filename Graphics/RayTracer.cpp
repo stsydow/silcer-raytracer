@@ -6,7 +6,6 @@
  */
 
 #include "RayTracer.h"
-#include <math.h>
 #include "../Data/constants.h"
 RayTracer::RayTracer(OffModel &model):
 	model(model),
@@ -16,7 +15,6 @@ RayTracer::RayTracer(OffModel &model):
 	size(height * width),
 	camera(width,height,pixelSize),
 	kdTree(NULL),
-	texture(model.tex.bitmap),
 	running(false),
 	ready(false)
 {
@@ -41,13 +39,17 @@ RayTracer::~RayTracer() {
 
 bool RayTracer::castRay(Ray &ray, int stage){
 	bool result = kdTree->traverse(ray);
-	unsigned int *pixel;
+	double diffCoeff, specCoeff, intensity;
 	if(result){
 		if(ray.direction * ray.normal >0) ray.normal *= -1;
-		pixel = (unsigned int*)texture->pixels + (int)(texture->w *ray.uTex + texture->w *(int)(texture->h*ray.vTex) );
 		ray.incommingLight.zero();
+		Material &material = *ray.destinationTriangle->material;
 		for(int i = 0; i < camera.numLights; i++){
 			Light &light = camera.lights[i];
+			if(light.ambient){
+				ray.incommingLight += material.calculateColor(light.color,1,0,1,ray.uTex, ray.vTex);
+				continue;
+			}
 			Vector lightDir;
 			double length = 1;
 			if(light.pointSource){
@@ -56,34 +58,27 @@ bool RayTracer::castRay(Ray &ray, int stage){
 			}else{
 				lightDir = light.direction;
 			}
-			double factor= -(ray.normal* lightDir);
-			if(factor > EPSILON){
+			diffCoeff= -(ray.normal* lightDir);
+			if(diffCoeff > 0){
 				ray.lightRay = new Ray();
 				ray.lightRay->length = length;
 				ray.lightRay->origin = ray.hitpoint;
 				ray.lightRay->originTriangle = ray.destinationTriangle;
 				ray.lightRay->setDirection(-lightDir);
-				bool lightBlocked = kdTree->traverse(*ray.lightRay);
-				if(!lightBlocked || (light.pointSource && ray.lightRay->length > length)){
-					double blinnTerm = (ray.lightRay->direction - ray.direction).normalize()* ray.normal;
-					if(blinnTerm < 0) blinnTerm = 0;
-					blinnTerm = pow(blinnTerm , 200);
-					for(int i = 0; i< 3;i++)
-						ray.incommingLight[i] += ((unsigned char *)pixel)[i]/255.0 * light.diffuseColor[i] *factor*1.5/(0.25 + length*length + length) + light.specularColor[i] * blinnTerm/(0.25*length*length);
+				if(!kdTree->traverse(*ray.lightRay)|| (light.pointSource && ray.lightRay->length > length)){
+					intensity = 1/(length*length);
+					specCoeff = (ray.lightRay->direction - ray.direction).normalize()* ray.normal;
+					if(specCoeff < 0) specCoeff = 0;
+					ray.incommingLight += material.calculateColor(light.color,diffCoeff,specCoeff, intensity,ray.uTex, ray.vTex);
 				}
-
 			}
-			for(int i = 0; i< 3;i++)
-				ray.incommingLight[i] += ((unsigned char *)pixel)[i]/255.0 *  light.ambientColor[i];
 		}
 		if(stage < 4){
 			ray.nextRay = new Ray();
 			ray.nextRay->origin = ray.hitpoint;
 			ray.nextRay->originTriangle = ray.destinationTriangle;
 			ray.nextRay->setDirection(ray.direction + ray.normal * (ray.normal*ray.direction * -2));
-			castRay(*ray.nextRay, stage +1);
-			for(int i = 0; i< 3;i++)
-				ray.incommingLight[i] += ((unsigned char *)pixel)[i]/255.0 *  (ray.nextRay->incommingLight[i] * 0.4);
+			if(castRay(*ray.nextRay, stage +1))	ray.incommingLight += ray.nextRay->incommingLight * material.reflectance;
 		}
 	}
 	if(stage == 0){
@@ -91,23 +86,22 @@ bool RayTracer::castRay(Ray &ray, int stage){
 			Light &light = camera.lights[i];
 			Vector lightDir;
 			double length = DOUBLEMAX;
+			if(light.ambient)continue;
 			if(light.pointSource){
 				length = (ray.origin - light.position).abs();
 				lightDir = (ray.origin - light.position).normalize();
 			}else{
 				lightDir = light.direction;
 			}
-			double factor= -(ray.direction* lightDir);
-			if(factor > 0.5 && (!result || length < ray.length)){
+			double factor= pow(-(ray.direction* lightDir),10000)*5;
+			if(factor > 0.001 && (!result || length < ray.length)){
 				if(!result){
 					ray.incommingLight.zero();
 					ray.length = length;
 					ray.hitpoint = ray.origin + ray.direction*length;
-				}
-				for(int j = 0; j< 3;j++){
-					ray.incommingLight[j] += pow(factor,10000)*light.diffuseColor[j];
 					result = true;
 				}
+				ray.incommingLight += light.color *factor;
 			}
 		}
 	}

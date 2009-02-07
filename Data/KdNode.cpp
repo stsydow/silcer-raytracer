@@ -60,7 +60,7 @@ void KdNode::computeMedian(const TriangleList &triangles, int size){
 }
 
 void KdNode::split(){
-	if(size > 4 && level < 18){
+	if(size > 4 && level < 14){
 		int dimension = level%3;
 		computeMedian(items, size);
 		left = new KdNode(level +1);

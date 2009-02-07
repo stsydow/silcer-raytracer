@@ -173,7 +173,7 @@ int dataPainter(void *p)
 		modelView.transformation[13] = -0.3;
 		modelView.transformation[14] = 4;
 		modelView.transformation.rotate(3.1415/8, y_Axes);
-		OffModel model("meshes/bunnysimple.off");
+		OffModel model("meshes/dragon.off");
 		tracer = new RayTracer(model);
 		modelView.addObj(&model);
 		modelView.addObj(&tracer->camera);
