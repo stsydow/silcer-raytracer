@@ -11,7 +11,7 @@
 #include "assert.h"
 #include "../Data/constants.h"
 
-OffModel::OffModel(char* filename):
+OffModel::OffModel(const char* filename):
 	showNormals(OFF),
 	showTexture(ON),
 	doLighting(ON)
@@ -76,7 +76,7 @@ void OffModel::draw()
 	}
 }
 
-void OffModel::readOff(char* filename) {
+void OffModel::readOff(const char* filename) {
 
 	printf("\nReading model file %s \n", filename);
 
@@ -88,73 +88,50 @@ void OffModel::readOff(char* filename) {
 		printf("Error opening file %s \n", filename);
 	}else{
 
-		fgets (buffer , 1024 , file);
+		assert(fgets (buffer , 1024 , file) > 0);
 		if(!strncmp("OFF", "buffer",3)){
 			printf("Error reading file %s \n", filename);
 		}else{
 			int numEdges;
-			fscanf(file, "%i %i %i", &numVertices, &numTriangles, &numEdges);
+			assert(fscanf(file, "%i %i %i", &numVertices, &numTriangles, &numEdges) > 0);
+			assert(numVertices >= 3);
 			vertices = new Vertex[numVertices];
 			triangles = new Triangle[numTriangles + 1];
 			float x,y,z;
 			for(int i=0 ; i <numVertices; i++){
-				fscanf(file, "%f %f %f",&x, &y, &z);
+				assert(fscanf(file, "%f %f %f",&x, &y, &z) > 0);
 				vertices[i]  = Vertex(x,y,z);
 			}
 
-			Vector mean;
-			mean.zero();
-			Coordinate center;
-			center.zero();
-			for(int i = 0; i < numVertices; i++){
-				mean += (vertices[i].position -center)* (1/numVertices);
-			}
-
-			Vector minV(mean), maxV(mean);
-
-			for(int i = 0; i < numVertices; i++){
-				minV[0] = min((minV[0]),(vertices[i].position[0]));
-				minV[1] = min((minV[1]),(vertices[i].position[1]));
-				minV[2] = min((minV[2]),(vertices[i].position[2]));
-				maxV[0] = max((maxV[0]),(vertices[i].position[0]));
-				maxV[1] = max((maxV[1]),(vertices[i].position[1]));
-				maxV[2] = max((maxV[2]),(vertices[i].position[2]));
-			}
-
-			double m_1 = minV.abs();
-			double m_2 = maxV.abs();
-			double r = max(m_2, m_1);
+			Vector minV(vertices[0].position), maxV(vertices[0].position);
 
 			for(int i = 0; i < numVertices; i++){
 				Coordinate &p = vertices[i].position;
-				p[0] = p[0] * (1/r);
-				p[1] = p[1] * (1/r);
-				p[2] = p[2] * (1/r);
+				minV[0] = min((minV[0]),(p[0]));
+				minV[1] = min((minV[1]),(p[1]));
+				minV[2] = min((minV[2]),(p[2]));
+				maxV[0] = max((maxV[0]),(p[0]));
+				maxV[1] = max((maxV[1]),(p[1]));
+				maxV[2] = max((maxV[2]),(p[2]));
+			}
+
+			double r = 1.0/(maxV-minV).abs();
+
+			for(int i = 0; i < numVertices; i++){
+				Coordinate &p = vertices[i].position;
+				p[0] = (p[0] - minV[0]) * r;
+				p[1] = (p[1] - minV[1]) * r;
+				p[2] = (p[2] - minV[2]) * r;
 			}
 
 			int n, k,l,m;
 			for(int i=0 ; i <numTriangles; i++){
-				fscanf(file, "%d %d %d %d", &n, &k, &l, &m);
+				assert(fscanf(file, "%d %d %d %d", &n, &k, &l, &m) > 0);
 				assert(n == 3);
 				triangles[i] =  Triangle(vertices + k, vertices +l, vertices + m);
 				triangles[i].material = &material;
 			}
 			fclose (file);
-			Vertex *v1 = new Vertex(-50,0.0,-50);
-			Vertex *v2 = new Vertex(0,0.0,40);
-			Vertex *v3 = new Vertex(50,0.0,-50);
-			triangles[numTriangles] = Triangle(v1, v2, v3);
-			triangles[numTriangles].material = &material;
-			v1->calculateNormal();
-			v2->calculateNormal();
-			v3->calculateNormal();
-			v1->textureCoord[0] = 0.3;
-			v1->textureCoord[1] = 0.3;
-			v2->textureCoord[0] = 0.3;
-			v2->textureCoord[1] = 0.6;
-			v3->textureCoord[0] = 0.6;
-			v3->textureCoord[1] = 0.6;
-			numTriangles ++;
 		}
 	}
 
@@ -166,13 +143,12 @@ void OffModel::readOff(char* filename) {
 void OffModel::calculateTextureCoordinates()
 {
 	Vector mean;
-	mean.zero();
-	Coordinate center;
-	center.zero();
-	for(int i = 0; i < numVertices; i++){
-		mean += (vertices[i].position -center) * (1/numVertices);
-	}
 	Vertex *v;
+	mean.zero();
+	for(int i = 0; i < numVertices; i++){
+		mean += vertices[i].position.toVector();
+	}
+	mean *= (1.0/numVertices);
 	for(int i = 0; i < numVertices; i++){
 		v = vertices + i;
 		double dy = v->position[e_X] - mean[e_X];

@@ -158,12 +158,13 @@ void Perspective::setCockpitOffset(int dimension, float value)
 }
 
 inline void readFile(char *buffer, FILE *file){
+	char* result = NULL;
 	do
 	{
-		fgets (buffer , 1024 , file);
-	}while (buffer[0] == '#');
+		result = fgets (buffer , 1024 , file);
+	}while (buffer[0] == '#' && result);
 }
-void Perspective::readFromFile(char* fileName){
+void Perspective::readFromFile(const char* fileName){
 
 	FILE *file;
 	char buffer [1024];

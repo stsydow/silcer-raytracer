@@ -31,7 +31,7 @@ public:
 
     void apply();
     void apply2D(GLdouble width, GLdouble height);
-    void readFromFile(char* fileName);
+    void readFromFile(const char* fileName);
 
 private:
 	float offset[3];

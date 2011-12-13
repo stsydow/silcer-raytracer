@@ -40,7 +40,7 @@ Font::~Font(void)
 	delete[] textures;
 }
 
-void Font::generateChar(char ch)
+void Font::generateChar(unsigned char ch)
 	throw(runtime_error)
 {
 	if(FT_Load_Glyph( face, FT_Get_Char_Index( face, ch ), FT_LOAD_DEFAULT ))

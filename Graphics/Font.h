@@ -38,7 +38,7 @@ protected:
 	GLuint *textures;
 	GLuint charSet;
 
-	void generateChar(char ch) throw(runtime_error);
+	void generateChar(unsigned char ch) throw(runtime_error);
 	void render(char *text) const;
 };
 

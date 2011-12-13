@@ -18,7 +18,7 @@ enum
 class OffModel :
 	public Drawable {
 public:
-	OffModel(char* filename);
+	OffModel(const char* filename);
 	virtual ~OffModel();
 	virtual void draw();
 	void calculateTextureCoordinates();
@@ -33,7 +33,7 @@ public:
 	Material material;
 private:
 
-	void readOff(char* filename);
+	void readOff(const char* filename);
 };
 
 #endif /* OFFMODEL_H_ */

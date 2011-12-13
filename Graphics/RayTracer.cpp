@@ -34,7 +34,7 @@ RayTracer::RayTracer(OffModel &model):
 
 RayTracer::~RayTracer() {
 	SDL_FreeSurface(image);
-	//TODO free kdTree
+	delete kdTree;
 }
 
 bool RayTracer::castRay(Ray &ray, int stage){
@@ -142,7 +142,7 @@ void RayTracer::record(){
 	}
 }
 
-void RayTracer::save(char *filename)
+void RayTracer::save(const char *filename)
 {
 	SDL_SaveBMP(image,filename);
 }
