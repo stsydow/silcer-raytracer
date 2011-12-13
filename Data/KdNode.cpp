@@ -8,6 +8,7 @@
 #include "KdNode.h"
 #include <math.h>
 #include "../Data/constants.h"
+#include "assert.h"
 
 const Vector one(1,1,1);
 
@@ -33,6 +34,8 @@ KdNode::KdNode(const TriangleList &triangles, int size):
 }
 
 KdNode::~KdNode() {
+	if(left) delete left;
+	if(right) delete right;
 	// TODO delete items
 }
 
@@ -89,6 +92,48 @@ void KdNode::split(){
 		right->split();
 		items.clear();
 	}
+}
+bool KdNode::intersect(Plane &p){
+	Coordinate v_max = Coordinate(min);
+	Coordinate v_min = Coordinate(max);
+	if(p.normal[0] >= 0){
+		v_max[0] = max[0];
+		v_min[0] = min[0];
+	}
+	if(p.normal[1] >= 0){
+		v_max[1] = max[1];
+		v_min[1] = min[1];
+	}
+	if(p.normal[2] >= 0){
+		v_max[2] = max[2];
+		v_min[2] = min[2];
+	}
+	float dist_max = v_max.toVector()*p.normal;
+	float dist_min = v_min.toVector()*p.normal;
+	return (dist_min - p.originDist) * (dist_max - p.originDist) < 0;
+}
+
+bool KdNode::traverse(Plane &p, std::list<Coordinate> &contour){
+
+	bool result = false;
+	if(intersect(p)){
+		if (left)
+			result |= left->traverse(p, contour);
+		if (right)
+			result |= right->traverse(p, contour);
+		if(!left && !right){
+			Coordinate c1, c2;
+			for(TriangleList::const_iterator iter = items.begin();iter != items.end(); iter++){
+				Triangle &t = *(*iter);
+				if(p.intersect(t, c1, c2) == 1){
+					contour.push_back(c1);
+					contour.push_back(c2);
+					result = true;
+				}
+			}
+		}
+	}
+	return result;
 }
 
 bool KdNode::intersect(Triangle &t){
@@ -157,48 +202,44 @@ bool KdNode::traverse(Ray &ray){
 void KdNode::draw(){
 	if(level == 0){
 		glBegin(GL_LINES);
-		left->draw();
-		right->draw();
+		if(left) left->draw();
+		if(right) right->draw();
 		glEnd();
 	}else {
+		if(!(fabs(min[0]) > 2 || fabs(min[1]) > 2 || fabs(min[2]) > 2 || fabs(max[0]) > 2 || fabs(max[1]) > 2|| fabs(max[2]) > 2) && size > 0){
+			double minx = min[0];
+			double miny = min[1];
+			double minz = min[2];
+			double maxx = max[0];
+			double maxy = max[1];
+			double maxz = max[2];
+			Vector color(level%3,(level+1)%3,(level+2)%3);
+			glColor3dv(color);
+			glVertex3d(minx,miny, minz);
+			glVertex3d(minx,miny, maxz);
+			glVertex3d(minx,miny, minz);
+			glVertex3d(minx,maxy, minz);
+			glVertex3d(minx,miny, minz);
+			glVertex3d(maxx,miny, minz);
+
+			glVertex3d(maxx,maxy, maxz);
+			glVertex3d(maxx,maxy, minz);
+			glVertex3d(maxx,maxy, maxz);
+			glVertex3d(maxx,miny, maxz);
+			glVertex3d(maxx,maxy, maxz);
+			glVertex3d(minx,maxy, maxz);
+
+			glVertex3d(minx,miny, maxz);
+			glVertex3d(maxx,miny, maxz);
+			glVertex3d(minx,maxy, minz);
+			glVertex3d(minx,maxy, maxz);
+			glVertex3d(maxx,miny, minz);
+			glVertex3d(maxx,maxy, minz);
+		}
 		if(left){
-		double minx = min[0];
-		Vector color(level%3,(level+1)%3,(level+2)%3);
-		glColor3dv(color);
-		if(fabs(minx) > 2 ) minx = -2;
-		double miny = min[1];
-		if(fabs(miny) > 2 ) miny = -2;
-		double minz = min[2];
-		if(fabs(minz) > 2 ) minz = -2;
-		double maxx = max[0];
-		if(fabs(maxx) > 2 ) maxx = 2;
-		double maxy = max[1];
-		if(fabs(maxy) > 2 ) maxy = 2;
-		double maxz = max[2];
-		if(fabs(maxz) > 2 ) maxz = 2;
-
-		glVertex3d(minx,miny, minz);
-		glVertex3d(minx,miny, maxz);
-		glVertex3d(minx,miny, minz);
-		glVertex3d(minx,maxy, minz);
-		glVertex3d(minx,miny, minz);
-		glVertex3d(maxx,miny, minz);
-
-		glVertex3d(maxx,maxy, maxz);
-		glVertex3d(maxx,maxy, minz);
-		glVertex3d(maxx,maxy, maxz);
-		glVertex3d(maxx,miny, maxz);
-		glVertex3d(maxx,maxy, maxz);
-		glVertex3d(minx,maxy, maxz);
-
-		glVertex3d(minx,miny, maxz);
-		glVertex3d(maxx,miny, maxz);
-		glVertex3d(minx,maxy, minz);
-		glVertex3d(minx,maxy, maxz);
-		glVertex3d(maxx,miny, minz);
-		glVertex3d(maxx,maxy, minz);
-
 			left->draw();
+		}
+		if(right){
 			right->draw();
 		}
 	}

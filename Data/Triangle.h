@@ -11,10 +11,6 @@
 #include "Vertex.h"
 #include "Material.h"
 
-typedef struct plane {
-	float a,b,c,d;
-} Plane;
-
 class Triangle {
 public:
 	Triangle();

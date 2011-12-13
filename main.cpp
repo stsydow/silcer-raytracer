@@ -7,6 +7,7 @@
 #include "Graphics/TransformGroup.h"
 #include "Graphics/OffModel.h"
 #include "Graphics/RayTracer.h"
+#include "Graphics/Slicer.h"
 #include <math.h>
 #include "Data/constants.h"
 #include <stdexcept>
@@ -24,6 +25,7 @@ Perspective *view;
 char messageBuffer[100];
 char *messageBufferEnd = messageBuffer;
 RayTracer *tracer;
+Slicer *slicer;
 bool resetView;
 
 string IntToString(int i)
@@ -44,20 +46,16 @@ void interpretConsole(){
 }
 
 
-int renderSceneTop(void *p)
+int renderScene(void *p)
 {
+	float* limits = (float*)p;
 	//CALLGRIND_START_INSTRUMENTATION
-	tracer->render(0, 0.5);
+	tracer->render(limits[0],limits[1]);
 	//CALLGRIND_STOP_INSTRUMENTATION
 	return 0;
 }
 
-int renderSceneBottom(void *p)
-{
-	tracer->render(0.5,1);
-	return 0;
-}
-int eventProcessor(void *p)
+int eventProcessor(__attribute__((unused)) void *p)
 {
 	SDL_Event *myEvent = new SDL_Event();
 	while(!quit)
@@ -104,14 +102,17 @@ int eventProcessor(void *p)
 			case SDL_MOUSEBUTTONDOWN:
 			{
 				mouse.update(*myEvent);
+				break;
 			}
 			case SDL_MOUSEBUTTONUP:
 			{
 				mouse.update(*myEvent);
+				break;
 			}
 			case SDL_MOUSEMOTION:
 			{
 				mouse.update(*myEvent);
+				break;
 			}
 		}
 	}
@@ -119,7 +120,7 @@ int eventProcessor(void *p)
 	return 0;
 }
 
-int dataPainter(void *p)
+int dataPainter(__attribute__((unused)) void *p)
 {
 	Vector x_Axes(1,0,0);
 	Vector y_Axes(0,1,0);
@@ -173,10 +174,30 @@ int dataPainter(void *p)
 		modelView.transformation[13] = -0.3;
 		modelView.transformation[14] = 4;
 		modelView.transformation.rotate(3.1415/8, y_Axes);
-		OffModel model("meshes/dragon.off");
+		OffModel model("meshes/bunny.off");
+
+		{//add a bottom plane
+			Vertex *v1 = new Vertex(-50,0.0,-50);
+			Vertex *v2 = new Vertex(0,0.0,40);
+			Vertex *v3 = new Vertex(50,0.0,-50);
+			model.triangles[model.numTriangles] = Triangle(v1, v2, v3);
+			model.triangles[model.numTriangles].material = &model.material;
+			v1->calculateNormal();
+			v2->calculateNormal();
+			v3->calculateNormal();
+			v1->textureCoord[0] = 0.3;
+			v1->textureCoord[1] = 0.3;
+			v2->textureCoord[0] = 0.3;
+			v2->textureCoord[1] = 0.6;
+			v3->textureCoord[0] = 0.6;
+			v3->textureCoord[1] = 0.6;
+			model.numTriangles ++;
+		}
 		tracer = new RayTracer(model);
+		slicer = new Slicer(model);
 		modelView.addObj(&model);
 		modelView.addObj(&tracer->camera);
+		modelView.addObj(slicer);
 		//modelView.addObj(tracer->kdTree);
 		canvas.add(&modelView);
 		Display.drawEverything();
@@ -210,10 +231,16 @@ int dataPainter(void *p)
 			}
 			console.setText(messageBuffer); //FIXME race condition?
 			Display.drawEverything();
+
 			if(!tracer->running && tracer->ready){
+				const int THREADS = 9;
 				lastView = modelView.transformation;
-				SDL_CreateThread(renderSceneTop, NULL);
-				SDL_CreateThread(renderSceneBottom, NULL);
+				float limits[THREADS +1];
+				limits[0] = 0;
+				for(int i = 0; i < THREADS; i++){
+					limits[i +1] = ((float)i +1)/THREADS;
+					SDL_CreateThread(renderScene, (void*)&limits[i]);
+				}
 			}
 			SDL_PumpEvents();
 			SDL_Delay(50);
@@ -234,7 +261,7 @@ int dataPainter(void *p)
 	return 0;
 }
 
-int main(int argc, char* argv[])
+int main()
 {
 	//CALLGRIND_STOP_INSTRUMENTATION
 	SDL_Thread* draw;

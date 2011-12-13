@@ -30,7 +30,7 @@ public:
 	void set(const Vector& x, const Vector& y, const Vector& z);
 	void setOnes();
 	const Matrix invert() const;
-	operator const double *const() const;
+	operator const double *() const;
 	void rotate(double alpha, Vector axis);
 private:
 	double M[16];

@@ -51,7 +51,7 @@ public:
 		return Vector(X[e_X] * value[e_X], X[e_Y] * value[e_Y],	X[e_Z] * value[e_Z]);
 	}
 	Vector normalize()const;
-	inline operator const double *const() const { return X;}
+	inline operator const double *() const { return X;}
 	Vector &operator+=(const Vector &value);
 	Vector &operator-=(const Vector &value);
 	Vector &operator*=(double value);

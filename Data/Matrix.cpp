@@ -223,7 +223,7 @@ const double* Matrix::column(int id) const{
 	return M + id*4;
 }
 
-Matrix::operator const double *const() const{
+Matrix::operator const double *() const{
 	return M;
 }
 

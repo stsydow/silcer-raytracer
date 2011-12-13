@@ -43,10 +43,14 @@ public:
 		result[2] -= value[2];
 		return result;
 	}
+	const inline Vector toVector(){
+		return Vector(X);
+	}
+
 	inline double& operator[](int i) {return X[i];}
 	inline double operator[](int i) const {return X[i];}
-	const double abs()const;
-	inline operator const double *const() const {return X;}
+	double abs() const;
+	inline operator const double *() const {return X;}
 	void zero();
 protected:
 	double X[3];

@@ -22,7 +22,7 @@ Coordinate& Coordinate::operator=(const Coordinate& value){
 	return *this;
 }
 
-const double Coordinate::abs()const{
+double Coordinate::abs() const{
 	return  sqrt(X[e_X] * X[e_X] + X[e_Y] * X[e_Y] + X[e_Z] * X[e_Z]);
 }
 

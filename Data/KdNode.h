@@ -8,6 +8,7 @@
 #ifndef KDNODE_H_
 #define KDNODE_H_
 #include "Triangle.h"
+#include "Plane.h"
 #include "Ray.h"
 #include <list>
 #include "../Graphics/Drawable.h"
@@ -21,8 +22,10 @@ public:
 	virtual ~KdNode();
 	void split();
 	bool intersect(Ray &ray, double &near_, double &far_);
+	bool intersect(Plane &p);
 	bool intersect(Triangle &t);
 	bool traverse(Ray &ray);
+	bool traverse(Plane &p, std::list<Coordinate> &contour);
 	virtual void draw();
 private:
 	void computeMedian(const TriangleList &triangles, int size);
