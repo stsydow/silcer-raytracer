@@ -6,13 +6,13 @@
  */
 
 #include "Slicer.h"
+#include <list>
+#include "assert.h"
 
-Slicer::Slicer(OffModel &model):
-model(model),
-kdTree(NULL)
-{
+Slicer::Slicer(OffModel &model) :
+		model(model), kdTree(NULL) {
 	TriangleList triangles;
-	for(int i =0 ; i <  model.numTriangles; i++){
+	for (int i = 0; i < model.numTriangles; i++) {
 		triangles.push_back(model.triangles + i);
 	}
 	kdTree = new KdNode(triangles, model.numTriangles);
@@ -27,43 +27,42 @@ Slicer::~Slicer() {
 
 void Slicer::draw() {
 
-	std::list<Coordinate> contour;
-	if(kdTree->traverse(sliceing_plane, contour)){
-		int i = 1, count = contour.size()/2;
-		glBegin(GL_LINE_STRIP);
-		for(std::list<Coordinate>::const_iterator iter = contour.begin();iter != contour.end(); iter++){
-			glColor4f((float)i/count,(float)(count - i)/count,0,0.5);
-			i++;
-			glVertex3dv(*iter);
-			iter++;
-			glVertex3dv(*iter);
+	std::list<Contour> contour_set;
+	srand(42);
+	if (kdTree->traverse(sliceing_plane, contour_set)) {
+		for (std::list<Contour>::const_iterator set_iter = contour_set.begin();
+				set_iter != contour_set.end(); set_iter++) {
+			set_iter->draw();
+			set_iter->print();
+			printf("\n");
 		}
-		glEnd();
+		printf("\n");
 		//sliceing_plane.originDist += 0.05;
-	}else{
+	} else {
 		//sliceing_plane.originDist = 0.001;
 	}
 
-	Vertex * v;
-	Vector down(0,-1,0);
-	Triangle *triangles = model.triangles;
-	glBegin(GL_TRIANGLES);
-	for (int i = 0; i < model.numTriangles;  i++) {
-		double acos_face = triangles[i].faceNormal*down;
-		if(acos_face > 0.7){
-				v = triangles[i].v[0];
-				glNormal3dv(v->normal);
-				glVertex3dv(v->position);
+	/*
+	 Vertex * v;
+	 Vector down(0,-1,0);
+	 Triangle *triangles = model.triangles;
+	 glBegin(GL_TRIANGLES);
+	 for (int i = 0; i < model.numTriangles;  i++) {
+	 double acos_face = triangles[i].faceNormal*down;
+	 if(acos_face > 0.7){
+	 v = triangles[i].v[0];
+	 glNormal3dv(v->normal);
+	 glVertex3dv(v->position);
 
-				v = triangles[i].v[1];
-				glNormal3dv(v->normal);
-				glVertex3dv(v->position);
+	 v = triangles[i].v[1];
+	 glNormal3dv(v->normal);
+	 glVertex3dv(v->position);
 
-				v = triangles[i].v[2];
-				glNormal3dv(v->normal);
-				glVertex3dv(v->position);
-
-		}
-	}
-	glEnd();
+	 v = triangles[i].v[2];
+	 glNormal3dv(v->normal);
+	 glVertex3dv(v->position);
+	 }
+	 }
+	 glEnd();
+	 */
 }

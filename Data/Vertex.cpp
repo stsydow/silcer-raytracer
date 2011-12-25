@@ -7,9 +7,10 @@
 
 #include "Vertex.h"
 
-Vertex::Vertex() {}
-Vertex::Vertex(float xi, float yi, float zi) : position(xi, yi, zi){}
-
+Vertex::Vertex():
+	id(-1){}
+Vertex::Vertex(float xi, float yi, float zi) : position(xi, yi, zi), id(-1){}
+Vertex::Vertex(float xi, float yi, float zi, int id) : position(xi, yi, zi), id(id){}
 Vertex::~Vertex() {}
 
 void Vertex::calculateNormal(){

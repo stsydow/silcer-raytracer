@@ -50,6 +50,7 @@ public:
 	inline double& operator[](int i) {return X[i];}
 	inline double operator[](int i) const {return X[i];}
 	double abs() const;
+	double distance(const Coordinate& value) const;
 	inline operator const double *() const {return X;}
 	void zero();
 protected:

@@ -16,6 +16,7 @@ class Vertex {
 public:
 	Vertex();
 	Vertex(float xi, float yi, float zi);
+	Vertex(float xi, float yi, float zi, int id);
 	virtual ~Vertex();
 
 	void calculateNormal();
@@ -24,6 +25,7 @@ public:
 	Vector normal;
 	std::list<Vector> faceNormals;
 	float textureCoord[2];
+	int id;
 };
 
 #endif /* VERTEX_H_ */

@@ -100,7 +100,7 @@ void OffModel::readOff(const char* filename) {
 			float x,y,z;
 			for(int i=0 ; i <numVertices; i++){
 				assert(fscanf(file, "%f %f %f",&x, &y, &z) > 0);
-				vertices[i]  = Vertex(x,y,z);
+				vertices[i]  = Vertex(x,y,z, i);
 			}
 
 			Vector minV(vertices[0].position), maxV(vertices[0].position);
@@ -128,7 +128,7 @@ void OffModel::readOff(const char* filename) {
 			for(int i=0 ; i <numTriangles; i++){
 				assert(fscanf(file, "%d %d %d %d", &n, &k, &l, &m) > 0);
 				assert(n == 3);
-				triangles[i] =  Triangle(vertices + k, vertices +l, vertices + m);
+				triangles[i] =  Triangle(vertices + k, vertices +l, vertices + m, i);
 				triangles[i].material = &material;
 			}
 			fclose (file);

@@ -113,24 +113,48 @@ bool KdNode::intersect(Plane &p){
 	return (dist_min - p.originDist) * (dist_max - p.originDist) < 0;
 }
 
-bool KdNode::traverse(Plane &p, std::list<Coordinate> &contour){
+bool KdNode::traverse(Plane &p, std::list<Contour> &contour_set){
 
 	bool result = false;
 	if(intersect(p)){
 		if (left)
-			result |= left->traverse(p, contour);
+			result |= left->traverse(p, contour_set);
 		if (right)
-			result |= right->traverse(p, contour);
+			result |= right->traverse(p, contour_set);
+
 		if(!left && !right){
 			Coordinate c1, c2;
 			for(TriangleList::const_iterator iter = items.begin();iter != items.end(); iter++){
 				Triangle &t = *(*iter);
-				if(p.intersect(t, c1, c2) == 1){
-					contour.push_back(c1);
-					contour.push_back(c2);
+				if(p.intersect(t) == 1){
+					p.intersect(t,c1,c2);
+					bool inserted = false;
+					for(std::list<Contour>::iterator set_iter = contour_set.begin();set_iter != contour_set.end(); set_iter++){
+						inserted = set_iter->insert(c1,c2);
+						if(inserted)
+							break;
+					}
+					if(!inserted){
+						Contour contour = Contour();
+						contour.insert(c1,c2);
+						contour_set.push_back(contour);
+					}
 					result = true;
 				}
 			}
+		}
+	}
+	std::list<Contour>::iterator merge_iter;
+	for(std::list<Contour>::iterator set_iter = contour_set.begin();set_iter != contour_set.end(); set_iter++){
+		merge_iter = set_iter;
+		merge_iter++;
+		while(merge_iter != contour_set.end()){
+			if(merge_iter->merge(*set_iter)){
+				set_iter = contour_set.erase(set_iter);
+				if(set_iter == contour_set.end()) break;
+				merge_iter = set_iter;
+			}
+			merge_iter++;
 		}
 	}
 	return result;

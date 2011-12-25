@@ -9,6 +9,7 @@
 #define KDNODE_H_
 #include "Triangle.h"
 #include "Plane.h"
+#include "Contour.h"
 #include "Ray.h"
 #include <list>
 #include "../Graphics/Drawable.h"
@@ -25,7 +26,7 @@ public:
 	bool intersect(Plane &p);
 	bool intersect(Triangle &t);
 	bool traverse(Ray &ray);
-	bool traverse(Plane &p, std::list<Coordinate> &contour);
+	bool traverse(Plane &p, std::list<Contour> &contour);
 	virtual void draw();
 private:
 	void computeMedian(const TriangleList &triangles, int size);

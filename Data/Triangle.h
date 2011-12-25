@@ -15,6 +15,7 @@ class Triangle {
 public:
 	Triangle();
 	Triangle(Vertex* v0, Vertex* v1, Vertex* v2);
+	Triangle(Vertex* v0, Vertex* v1, Vertex* v2, int id);
 	virtual ~Triangle();
 	void computeNormal();
 
@@ -24,6 +25,7 @@ public:
 	Vector a, b;
 	Coordinate min, max, center;
 	Material *material;
+	int id;
 };
 
 #endif /* TRIANGLE_H_ */

@@ -26,6 +26,15 @@ double Coordinate::abs() const{
 	return  sqrt(X[e_X] * X[e_X] + X[e_Y] * X[e_Y] + X[e_Z] * X[e_Z]);
 }
 
+double Coordinate::distance(const Coordinate& value) const{
+	double dist_sqr = 0.0, d;
+	for(int i = 0; i <3; i++){
+		d = X[i]-value[i];
+		dist_sqr += d*d;
+	}
+	return  sqrt(dist_sqr);
+}
+
 void Coordinate::zero(){
 	X[0] = 0;
 	X[1] = 0;

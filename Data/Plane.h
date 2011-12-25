@@ -18,7 +18,8 @@ class Plane {
 public:
 	Plane();
 	virtual ~Plane();
-	int intersect(const Triangle &T, Coordinate &I1, Coordinate &I2);
+	void intersect(const Triangle &T, Coordinate &I1, Coordinate &I2);
+	int intersect(const Triangle &T);
 	void reset();
 	Vector normal;
 	double originDist;

@@ -38,7 +38,7 @@ Ray::~Ray() {
 int Ray::intersect(const Triangle &T)
 {
 	if(originTriangle && originTriangle == &T) return 0;
-    float a = -(T.faceNormal*(origin - T.v[0]->position));
+    float a = T.faceNormal*(T.v[0]->position - origin);
     float b = T.faceNormal*direction;
     if (fabs(b) < EPSILON) {     // ray is parallel to triangle plane
         if (a == 0)                // ray lies in triangle plane
