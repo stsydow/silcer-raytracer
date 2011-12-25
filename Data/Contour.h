@@ -10,13 +10,12 @@
 
 #include "../Graphics/Drawable.h"
 #include <list>
-#include "assert.h"
+#include <assert.h>
 #include "Coordinate.h"
 
 class Contour: public Drawable {
 public:
 	Contour();
-	virtual ~Contour();
 	void draw() const;
 	virtual inline void draw() {
 		draw();
@@ -33,6 +32,7 @@ public:
 	}
 
 	inline void check() const {
+#if 0
 		std::list<Coordinate>::const_iterator iter = points.begin();
 		if (iter == points.end())
 			return;
@@ -48,6 +48,7 @@ public:
 			iter++;
 			i++;
 		}
+#endif
 	}
 
 	inline void print(bool full = false) const {
@@ -62,7 +63,6 @@ public:
 
 				printf("[%0.4f,%0.4f,%0.4f]", (*iter)[0], (*iter)[1],
 						(*iter)[2]);
-				//printf(" - %0.3f", last.distance(*iter));
 				last = *iter;
 				iter++;
 			}

@@ -13,10 +13,6 @@ Contour::Contour() :
 		isClosed(false) {
 }
 
-Contour::~Contour() {
-	// TODO Auto-generated destructor stub
-}
-
 bool Contour::insert(const Coordinate &c1, const Coordinate &c2) {
 	if (isClosed)
 		return false;
@@ -29,7 +25,6 @@ bool Contour::insert(const Coordinate &c1, const Coordinate &c2) {
 		if (c1.distance(points.front()) < EPSILON) {
 			if (c2.distance(points.back()) < EPSILON) {
 				isClosed = true;
-				assert(0);
 			} else {
 				points.push_front(c2);
 			}
@@ -46,7 +41,6 @@ bool Contour::insert(const Coordinate &c1, const Coordinate &c2) {
 		} else if (c1.distance(points.back()) < EPSILON) {
 			if (c2.distance(points.front()) < EPSILON) {
 				isClosed = true;
-				assert(0);
 			} else {
 				points.push_back(c2);
 			}
@@ -55,7 +49,6 @@ bool Contour::insert(const Coordinate &c1, const Coordinate &c2) {
 		} else if (c2.distance(points.back()) < EPSILON) {
 			if (c1.distance(points.front()) < EPSILON) {
 				isClosed = true;
-				assert(0);
 			} else {
 				points.push_back(c1);
 			}
@@ -74,8 +67,8 @@ bool Contour::merge(const Contour &c) {
 		return false;
 	}
 	const std::list<Coordinate> &new_points = c.points;
-	assert(new_points.size() > 1);
-	int expected_size = size() + c.size();
+	assert(new_points.empty() == false);
+	//int expected_size = size() + c.size();
 	if (points.empty()) {
 		std::list<Coordinate>::iterator it = points.begin();
 		points.insert(it, new_points.begin(), new_points.end());
@@ -104,25 +97,30 @@ bool Contour::merge(const Contour &c) {
 		if (points.front().distance(points.back()) < EPSILON) {
 			points.pop_back();
 			isClosed = true;
-			assert(0);
 		}
-	}assert(size() == expected_size);
+	}
+	//assert(size() == expected_size);
 	return true;
 }
 
 void Contour::draw() const {
+    if(isClosed){
+	glBegin(GL_LINE_LOOP);
+    }else{
 	glBegin(GL_LINE_STRIP);
-	float color[4];
-	color[0] = (float) (rand() % 256) / 256;
-	color[1] = (float) (rand() % 256) / 256;
-	color[2] = (float) (rand() % 256) / 256;
-	color[3] = 0.3;
-	glColor4fv(color);
-	for (std::list<Coordinate>::const_iterator iter = points.begin();
-			iter != points.end(); iter++) {
-		glVertex3dv(*iter);
-	}
-	glEnd();
+    }
+    float color[4];
+    color[0] = (float) (rand() % 256) / 256;
+    color[1] = (float) (rand() % 256) / 256;
+    color[2] = (float) (rand() % 256) / 256;
+    color[3] = 0.6;
+    glColor4fv(color);
+    for (std::list<Coordinate>::const_iterator iter = points.begin();
+	    iter != points.end(); iter++) {
+	glVertex3dv(*iter);
+    }
+    glEnd();
+    if(!isClosed){
 	color[3] = 1;
 	glBegin(GL_POINTS);
 	glColor4fv(color);
@@ -130,4 +128,5 @@ void Contour::draw() const {
 	glVertex3dv(points.back());
 
 	glEnd();
+    }
 }

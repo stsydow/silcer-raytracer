@@ -93,7 +93,7 @@ void KdNode::split(){
 		items.clear();
 	}
 }
-bool KdNode::intersect(Plane &p){
+bool KdNode::intersect(Plane &p) const{
 	Coordinate v_max = Coordinate(min);
 	Coordinate v_min = Coordinate(max);
 	if(p.normal[0] >= 0){
@@ -113,7 +113,28 @@ bool KdNode::intersect(Plane &p){
 	return (dist_min - p.originDist) * (dist_max - p.originDist) < 0;
 }
 
-bool KdNode::traverse(Plane &p, std::list<Contour> &contour_set){
+bool KdNode::traverse(Plane &p, std::set<Triangle*> &triangle_set) const{
+
+	bool result = false;
+	if(intersect(p)){
+		if (left)
+			result |= left->traverse(p, triangle_set);
+		if (right)
+			result |= right->traverse(p, triangle_set);
+
+		if(!left && !right){
+			for(TriangleList::const_iterator iter = items.begin();iter != items.end(); iter++){
+				if(p.intersect(**iter) == 1){
+					triangle_set.insert(*iter);
+					result = true;
+				}
+			}
+		}
+	}
+	return result;
+}
+
+bool KdNode::traverse(Plane &p, std::list<Contour> &contour_set) const{
 
 	bool result = false;
 	if(intersect(p)){

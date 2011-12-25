@@ -12,6 +12,7 @@
 #include "Contour.h"
 #include "Ray.h"
 #include <list>
+#include <set>
 #include "../Graphics/Drawable.h"
 
 typedef std::list<Triangle*> TriangleList;
@@ -23,10 +24,11 @@ public:
 	virtual ~KdNode();
 	void split();
 	bool intersect(Ray &ray, double &near_, double &far_);
-	bool intersect(Plane &p);
+	bool intersect(Plane &p) const;
 	bool intersect(Triangle &t);
 	bool traverse(Ray &ray);
-	bool traverse(Plane &p, std::list<Contour> &contour);
+	bool traverse(Plane &p, std::set<Triangle*> &triangle_set) const;
+	bool traverse(Plane &p, std::list<Contour> &contour_set) const;
 	virtual void draw();
 private:
 	void computeMedian(const TriangleList &triangles, int size);
