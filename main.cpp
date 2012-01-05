@@ -13,6 +13,7 @@
 #include <stdexcept>
 #include <string>
 #include <sstream>
+#include "assert.h"
 #include <SDL/SDL_thread.h>
 #include "Graphics/Mouse.h"
 //#include "valgrind/callgrind.h"
@@ -165,17 +166,23 @@ int dataPainter(__attribute__((unused)) void *p)
 	    //
 		glEnable(GL_LIGHT0);
 		glEnable(GL_LIGHT1);
+		glEnable(GL_COLOR_MATERIAL);
 		glEnable(GL_LIGHT_MODEL_LOCAL_VIEWER);
 		glShadeModel(GL_SMOOTH);
 		//glEnable (GL_POINT_SMOOTH);	// Antialiasing fuer Punkte einschalten
 		//glEnable (GL_LINE_SMOOTH);	// Antialiasing fuer Linien einschalten
 
 		TransformGroup modelView;
-		modelView.transformation[13] = -0.3;
-		modelView.transformation[14] = 4;
-		modelView.transformation.rotate(3.1415/8, y_Axes);
-		OffModel model("meshes/bunny.off");
 
+		modelView.transformation[12] = -0.25;
+		modelView.transformation[13] = -0.25;
+		modelView.transformation[14] = 2;
+		//modelView.transformation.rotate(3.1415/8, y_Axes);
+		modelView.transformation.rotate(3.1415/2, x_Axes);
+		OffModel model("meshes/bunny.off");
+		assert(model.numTriangles > 0);
+
+#if 0
 		{//add a bottom plane
 			Vertex *v1 = new Vertex(-50,0.0,-50);
 			Vertex *v2 = new Vertex(0,0.0,40);
@@ -193,6 +200,8 @@ int dataPainter(__attribute__((unused)) void *p)
 			v3->textureCoord[1] = 0.6;
 			model.numTriangles ++;
 		}
+#endif
+
 		tracer = new RayTracer(model);
 		slicer = new Slicer(model);
 		modelView.addObj(&model);
@@ -223,11 +232,17 @@ int dataPainter(__attribute__((unused)) void *p)
 				modelView.transformation = lastView;
 			}
 
-			if(mouse.isClicked()){
+			if(mouse.isLeftClicked()){
 				int x, y;
 				mouse.getDelta(x,y);
 				if(x != 0)modelView.transformation.rotate(x/100.0, y_Axes);
 				if(y != 0)modelView.transformation.rotate(y/100.0, x_Axes);
+			}
+			if(mouse.isRightClicked()){
+				int x, y;
+				mouse.getDelta(x,y);
+				if(x != 0)modelView.transformation[12] += x/100.0;
+				if(y != 0)modelView.transformation[13] -= y/100.0;
 			}
 			console.setText(messageBuffer); //FIXME race condition?
 			Display.drawEverything();

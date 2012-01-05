@@ -35,11 +35,12 @@ Ray::~Ray() {
 //    Return:  0 = disjoint (no intersect)
 //             1 = intersect in unique point I1
 //             2 = are in the same plane
-int Ray::intersect(const Triangle &T)
+int Ray::intersect(const Triangle &T, bool reverse_normal)
 {
 	if(originTriangle && originTriangle == &T) return 0;
-    float a = T.faceNormal*(T.v[0]->position - origin);
-    float b = T.faceNormal*direction;
+    float rev = reverse_normal?-1:1;
+    float a = (T.faceNormal*rev)*(T.v[0]->position - origin);
+    float b = (T.faceNormal*rev)*direction;
     if (fabs(b) < EPSILON) {     // ray is parallel to triangle plane
         if (a == 0)                // ray lies in triangle plane
             return 2;

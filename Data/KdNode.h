@@ -26,7 +26,7 @@ public:
 	bool intersect(Ray &ray, double &near_, double &far_);
 	bool intersect(Plane &p) const;
 	bool intersect(Triangle &t);
-	bool traverse(Ray &ray);
+	bool traverse(Ray &ray, bool inner=false);
 	bool traverse(Plane &p, std::set<Triangle*> &triangle_set) const;
 	bool traverse(Plane &p, std::list<Contour> &contour_set) const;
 	virtual void draw();

@@ -31,7 +31,7 @@ void RayTraceCamera::updateView(){
 void RayTraceCamera::draw()
 {
 	GLfloat _directionalVec[] = { 0.0, 1.0, 0.0, 0.0 };
-	GLfloat _diffuseVec[] = { 0.3, 0.3, 0.3, 1.0 };
+	GLfloat _diffuseVec[] = { 0.7, 0.7, 0.7, 1.0 };
 	glLightfv(GL_LIGHT0, GL_POSITION, _directionalVec);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, _diffuseVec);
 
@@ -102,6 +102,7 @@ void RayTraceCamera::draw()
 		if(pixelSize > 1)glPointSize(pixelSize);
 		else glPointSize(1);
 		Ray *current;
+		glDisable(GL_DEPTH_TEST);
 		glBegin(GL_POINTS);
 		for (int i = 0; i < width; ++i) {
 			for (int j = 0; j < height; ++j) {
@@ -114,5 +115,6 @@ void RayTraceCamera::draw()
 			}
 		}
 		glEnd();
+		glEnable(GL_DEPTH_TEST);
 	}
 }

@@ -19,7 +19,7 @@ public:
 	Ray();
 	virtual ~Ray();
 	void setDirection(const Vector &value);
-	int intersect(const Triangle &T);
+	int intersect(const Triangle &T, bool reverse_normal = false);
 	void reset();
 	Coordinate origin;
 	Vector direction;

@@ -36,6 +36,17 @@ Triangle::Triangle(Vertex* v0, Vertex* v1, Vertex* v2, int id):
 
 Triangle::~Triangle() {}
 
+bool Triangle::neigbourOf(Triangle &t){
+    for(int i = 0; i < 3; i++)
+    for(int j = i; j < 3; j++){
+	if(v[i]->id == t.v[j]->id && v[i]->id >= 0){
+	    if(v[i]->id >= 0 || v[i]->position.distance(t.v[j]->position) < EPSILON)
+		return true;
+	}
+    }
+    return false;
+}
+
 void Triangle::computeNormal(){
 	a = v[1]->position - v[0]->position;
 	b = v[2]->position - v[0]->position;

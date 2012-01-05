@@ -6,8 +6,10 @@
  */
 
 #include "Slicer.h"
+#include "colors.h"
 #include <list>
 #include <set>
+#include <map>
 #include "assert.h"
 
 Slicer::Slicer(OffModel &model) :
@@ -79,8 +81,50 @@ bool Slicer::slice() {
 	return result;
 }
 
+void Slicer::generate_support() {
+
+    Vector down(0,-1,0);
+    Triangle *triangles = model.triangles;
+    for (int i = 0; i < model.numTriangles;  i++) {
+	double acos_face = triangles[i].faceNormal*down;
+	if(acos_face > 0.3){
+	    support_triangles.push_back(&triangles[i]);
+	}
+    }
+
+    Vertex * v;
+    std::list<std::set<Triangle*>* > support_components;
+    Ray weight_sense;
+    bool hit;
+    len_max = 0.0;
+    weight_sense.setDirection(sliceing_plane.normal);
+    for (std::list<Triangle*>::const_iterator iter = support_triangles.begin();
+	    iter != support_triangles.end(); iter++){
+	for(int i = 0; i < 3; i++){
+	    v = (*iter)->v[i];
+	    if(support_vertices.find(v) == support_vertices.end()){
+	    	weight_sense.length = DOUBLEMAX;
+	    	weight_sense.origin = v->position;
+	    	hit = kdTree->traverse(weight_sense);
+	    	if (hit){
+	    	    support_vertices.insert(pair<Vertex*, double>(v, weight_sense.length));
+		    if(len_max < weight_sense.length){
+		    	len_max = weight_sense.length;
+		    }
+		}else{
+	    	    support_vertices.insert(pair<Vertex*, double>(v, -1.0));
+		}
+	    }
+	}	
+    }
+}
+
+
 void Slicer::draw() {
     slice();
+    if(support_triangles.empty()){
+    	generate_support();
+    }
     srand(42);
     for (std::list<Contour>::const_iterator set_iter = contour_set.begin();
 	    set_iter != contour_set.end(); set_iter++) {
@@ -91,27 +135,50 @@ void Slicer::draw() {
     }else{
 	sliceing_plane.originDist = 0.0;
     }
-
-    Vertex * v;
-    Vector down(0,-1,0);
-    Triangle *triangles = model.triangles;
+    glEnable(GL_LIGHTING);
     glBegin(GL_TRIANGLES);
     glColor4f(1.0f,0.0f,0.0f,0.2f);
-    for (int i = 0; i < model.numTriangles;  i++) {
-	double acos_face = triangles[i].faceNormal*down;
-	if(acos_face > 0.7){
-	    v = triangles[i].v[0];
-	    glNormal3dv(v->normal);
-	    glVertex3dv(v->position);
 
-	    v = triangles[i].v[1];
-	    glNormal3dv(v->normal);
-	    glVertex3dv(v->position);
+    Vertex * v;
+    for (std::list<Triangle*>::const_iterator iter = support_triangles.begin();
+	    iter != support_triangles.end(); iter++){
+	/*
+	std::list<std::list<std::set<Triangle*>*>::iterator> matches;
+	std::list<std::set<Triangle*>*>::iterator component_iter;
+	for (component_iter = support_components.begin();
+		component_iter != support_components.end(); component_iter++){
 
-	    v = triangles[i].v[2];
+	    for (std::set<Triangle*>::const_iterator triangle_iter = (*component_iter)->begin();
+		triangle_iter != (*component_iter)->end(); triangle_iter++){
+	    	if((*triangle_iter)->neigbourOf(**iter)){
+		    matches.push_back(component_iter);
+		}
+	    }
+	}
+	if(matches.size() > 0){
+	    (*component_iter)->insert(*iter);
+		//merge matches
+	}
+	else{
+	    std::set<Triangle*> *c = new std::set<Triangle*>();
+	    c->insert(*iter);
+	    support_components.push_back(c);
+	}
+	*/
+
+	for(int i = 0; i < 3; i++){
+	    v = (*iter)->v[i];
+
+	    double len = support_vertices.find(v)->second / len_max;
+	    double h = 1.75 * 2 * PI;
+	    if (len >= 0){
+		h = (1.75 - len) * 2 * PI;
+	    }
+	    glColorLCh(90,100,h);
 	    glNormal3dv(v->normal);
 	    glVertex3dv(v->position);
 	}
     }
     glEnd();
+    glDisable(GL_LIGHTING);
 }

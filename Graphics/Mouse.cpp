@@ -56,6 +56,10 @@ void Mouse::getDelta(int &x, int &y){
 	SDL_UnlockMutex(monitor);
 }
 
-bool Mouse::isClicked(){
+bool Mouse::isLeftClicked() const{
 	return leftButton;
+}
+
+bool Mouse::isRightClicked() const{
+	return rightButton;
 }

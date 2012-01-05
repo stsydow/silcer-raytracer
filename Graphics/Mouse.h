@@ -19,7 +19,8 @@ public:
 	void getPositon(int &x, int &y);
 	void getDeltaSinceClick(int &x, int &y);
 	void getDelta(int &x, int &y);
-	bool isClicked();
+	bool isLeftClicked() const;
+	bool isRightClicked() const;
 
 private:
 	int x, y;

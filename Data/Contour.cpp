@@ -7,7 +7,8 @@
 
 #include "Contour.h"
 #include "assert.h"
-#include "../Data/constants.h"
+#include "constants.h"
+#include "../Graphics/colors.h"
 
 Contour::Contour() :
 		isClosed(false) {
@@ -104,29 +105,23 @@ bool Contour::merge(const Contour &c) {
 }
 
 void Contour::draw() const {
+    glDisable(GL_DEPTH_TEST);
     if(isClosed){
 	glBegin(GL_LINE_LOOP);
     }else{
 	glBegin(GL_LINE_STRIP);
     }
-    float color[4];
-    color[0] = (float) (rand() % 256) / 256;
-    color[1] = (float) (rand() % 256) / 256;
-    color[2] = (float) (rand() % 256) / 256;
-    color[3] = 0.6;
-    glColor4fv(color);
+    glColorLCh(70,70, PI*(rand() % 100) / 100);
     for (std::list<Coordinate>::const_iterator iter = points.begin();
 	    iter != points.end(); iter++) {
 	glVertex3dv(*iter);
     }
     glEnd();
     if(!isClosed){
-	color[3] = 1;
 	glBegin(GL_POINTS);
-	glColor4fv(color);
 	glVertex3dv(points.front());
 	glVertex3dv(points.back());
-
 	glEnd();
     }
+    glEnable(GL_DEPTH_TEST);
 }

@@ -18,6 +18,7 @@ public:
 	Triangle(Vertex* v0, Vertex* v1, Vertex* v2, int id);
 	virtual ~Triangle();
 	void computeNormal();
+	bool neigbourOf(Triangle &t);
 
 	Triangle& operator=(const Triangle& value);
 	Vector faceNormal;

@@ -34,8 +34,7 @@ void OffModel::draw()
 {
 	if (enabled){
 		glPushMatrix();
-		glEnable(GL_DEPTH_TEST);
-		glColor4f(1,1,1,0.7);
+		glColor4f(1,1,1,1);
 		if(material.texture) glBindTexture(GL_TEXTURE_2D, material.texture->getTexture());
 		if(doLighting) glEnable(GL_LIGHTING);
 		if(material.texture && showTexture)glEnable(GL_TEXTURE_2D);
@@ -71,7 +70,6 @@ void OffModel::draw()
 				}
 			glEnd();
 	    }
-	    glDisable(GL_DEPTH_TEST);
 	    glPopMatrix();
 	}
 }

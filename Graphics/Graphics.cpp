@@ -28,10 +28,10 @@ Graphics::Graphics(string windowTitle, int width, int height, bool fullscreen)
 	SDL_WM_SetCaption(windowTitle.c_str(), NULL);
 
 	glShadeModel(GL_SMOOTH);							// Enable Smooth Shading
-	glClearColor(.0f, .0f, .0f, .0f);				// Black Background
-	//glClearDepth(1.0f);									// Depth Buffer Setup
-	//glEnable(GL_DEPTH_TEST);							// Enables Depth Testing
-	//glDepthFunc(GL_LEQUAL);								// The Type Of Depth Testing To Do
+	glClearColor(0.3f, 0.3f, 0.3f, 0.3f);				// Black Background
+	glClearDepth(1.0f);									// Depth Buffer Setup
+	glEnable(GL_DEPTH_TEST);							// Enables Depth Testing
+	glDepthFunc(GL_LEQUAL);								// The Type Of Depth Testing To Do
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);      // Enable Alpha Blending (disable alpha testing)
 	glEnable(GL_BLEND);                                     // Enable Blending       (disable alpha testing)

@@ -193,6 +193,7 @@ void  Font::render(char *text) const{
 		}
 	}
 	glDisable(GL_TEXTURE_2D);
+	glEnable(GL_DEPTH_TEST);
 	glPopMatrix();
 	glPopAttrib();
 }

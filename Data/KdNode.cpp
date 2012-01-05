@@ -213,7 +213,7 @@ bool KdNode::intersect(Ray &ray, double &near_, double &far_){
 	return true;
 }
 
-bool KdNode::traverse(Ray &ray){
+bool KdNode::traverse(Ray &ray, bool inner){
 	bool result = false;
 	if(left){
 		double leftNear, leftFar,rightNear,rightFar;
@@ -238,7 +238,7 @@ bool KdNode::traverse(Ray &ray){
 	}else{
 		for(TriangleList::const_iterator iter = items.begin();iter != items.end(); iter++){
 			Triangle &t = *(*iter);
-			if(ray.intersect(t) == 1) result = true;
+			if(ray.intersect(t, inner) == 1) result = true;
 		}
 	}
 	return result;

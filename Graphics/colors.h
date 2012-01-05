@@ -22,4 +22,40 @@ const GLubyte yellow_0[3]= {255, 255,   0};
 const GLubyte yellow[3]  = {255, 221,  42};
 const GLubyte white[3]   = {255, 255, 255};
 
+inline void glColorLab(double L, double a, double b){
+    const double EPSILON_LAB = 0.00885645;
+    const double KAPPA_LAB = 903.296;
+    double f_y = (L +16)/116;
+    double f_x = a/500 + f_y;
+    double f_z = f_y - b/200;
+
+    double x = f_x * f_x * f_x;
+    if(x <= EPSILON_LAB){
+    	x = (116*f_x - 16)/KAPPA_LAB;
+    }
+
+    double y;
+    if(L > KAPPA_LAB*EPSILON_LAB){
+    	y = (L+16)/116;
+	y *= y*y; 
+    }else{
+    	y = L/KAPPA_LAB;
+    }
+
+    double z = f_z*f_z*f_z;
+    if(z <= EPSILON_LAB){
+    	z = (116*f_z - 16)/KAPPA_LAB;
+    }
+
+    //Adobe RGB 1998
+    float R = x *  2.0413690 + y * -0.5649464 + z * -0.3446944;
+    float G = x * -0.9692660 + y *  1.8760108 + z *  0.0415560;
+    float B = x *  0.0134474 + y * -0.1183897 + z *  1.0154096;
+    glColor3f(R,G,B);
+}
+
+inline void glColorLCh(double L, double C, double h){
+    glColorLab(L,C*cos(h),C*sin(h));
+}
+
 #endif
