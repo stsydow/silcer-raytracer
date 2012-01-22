@@ -14,6 +14,10 @@
 #include "../Data/KdNode.h"
 #include <list>
 #include <map>
+#include <set>
+
+typedef std::set<Triangle*> MeshComponent;
+typedef std::set<MeshComponent*> ComponentSet;
 
 class Slicer: public Drawable {
 public:
@@ -31,6 +35,7 @@ public:
 	std::list<Triangle*> support_triangles;
 	std::list<Contour> contour_set;
 	std::map<Vertex*, double> support_vertices;
+	ComponentSet support_components;
 };
 
 #endif /* SLICER_H_ */

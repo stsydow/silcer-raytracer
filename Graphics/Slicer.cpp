@@ -87,13 +87,12 @@ void Slicer::generate_support() {
     Triangle *triangles = model.triangles;
     for (int i = 0; i < model.numTriangles;  i++) {
 	double acos_face = triangles[i].faceNormal*down;
-	if(acos_face > 0.3){
+	if(acos_face > 0.7){
 	    support_triangles.push_back(&triangles[i]);
 	}
     }
 
     Vertex * v;
-    std::list<std::set<Triangle*>* > support_components;
     Ray weight_sense;
     bool hit;
     len_max = 0.0;
@@ -115,10 +114,43 @@ void Slicer::generate_support() {
 	    	    support_vertices.insert(pair<Vertex*, double>(v, -1.0));
 		}
 	    }
-	}	
-    }
-}
+	}
+	
+	ComponentSet matches;
+	ComponentSet::iterator component_iter;
+	for (component_iter = support_components.begin();
+		component_iter != support_components.end(); component_iter++){
 
+	    for (MeshComponent::const_iterator triangle_iter = (*component_iter)->begin();
+		triangle_iter != (*component_iter)->end(); triangle_iter++){
+		Triangle **neighbours = (*triangle_iter)->neighbours;
+		for(int i = 0; i < 3; i++){
+		    assert(neighbours[i] != NULL); //mesh not closed
+		    if(neighbours[i] == *iter){ 
+		    	matches.insert(*component_iter);	
+			break;
+		    }
+		}
+	    }
+	}
+	if(matches.size() > 1){
+
+	    MeshComponent *first_component = *matches.begin();
+	    ComponentSet::iterator merge_iter;
+	    for(merge_iter = matches.begin()++; merge_iter != matches.end(); merge_iter++){
+		first_component->insert((*merge_iter)->begin(), (*merge_iter)->end());
+	    	assert(support_components.erase(*merge_iter) == 1);
+	    }
+	}
+	else{
+	    std::set<Triangle*> *c = new std::set<Triangle*>();
+	    c->insert(*iter);
+	    support_components.insert(c);
+	}
+    }
+    printf("components: %d\n", (int)support_components.size());
+    printf("triangles: %d\n", (int)support_triangles.size());
+}
 
 void Slicer::draw() {
     slice();
@@ -140,32 +172,30 @@ void Slicer::draw() {
     glColor4f(1.0f,0.0f,0.0f,0.2f);
 
     Vertex * v;
-    for (std::list<Triangle*>::const_iterator iter = support_triangles.begin();
-	    iter != support_triangles.end(); iter++){
-	/*
-	std::list<std::list<std::set<Triangle*>*>::iterator> matches;
-	std::list<std::set<Triangle*>*>::iterator component_iter;
-	for (component_iter = support_components.begin();
-		component_iter != support_components.end(); component_iter++){
+    ComponentSet::const_iterator component_iter;
+    srand(22);
+    for (component_iter = support_components.begin();
+	    component_iter != support_components.end(); component_iter++){
+	glColorLCh(70,70, PI*(rand() % 100) / 100);
+    	for (MeshComponent::const_iterator iter = (*component_iter)->begin();
+	    iter != (*component_iter)->end(); iter++){
+	    for(int i = 0; i < 3; i++){
+		v = (*iter)->v[i];
 
-	    for (std::set<Triangle*>::const_iterator triangle_iter = (*component_iter)->begin();
-		triangle_iter != (*component_iter)->end(); triangle_iter++){
-	    	if((*triangle_iter)->neigbourOf(**iter)){
-		    matches.push_back(component_iter);
+		double len = support_vertices.find(v)->second / len_max;
+		double h = 1.75 * 2 * PI;
+		if (len >= 0){
+		    h = (1.75 - len) * 2 * PI;
 		}
+		glNormal3dv(v->normal);
+		glVertex3dv(v->position);
 	    }
 	}
-	if(matches.size() > 0){
-	    (*component_iter)->insert(*iter);
-		//merge matches
-	}
-	else{
-	    std::set<Triangle*> *c = new std::set<Triangle*>();
-	    c->insert(*iter);
-	    support_components.push_back(c);
-	}
-	*/
-
+    }
+    /*
+    for (std::list<Triangle*>::const_iterator iter = support_triangles.begin();
+	    iter != support_triangles.end(); iter++){
+	
 	for(int i = 0; i < 3; i++){
 	    v = (*iter)->v[i];
 
@@ -179,6 +209,7 @@ void Slicer::draw() {
 	    glVertex3dv(v->position);
 	}
     }
+    */
     glEnd();
     glDisable(GL_LIGHTING);
 }

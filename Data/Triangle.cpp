@@ -6,20 +6,40 @@
  */
 
 #include "Triangle.h"
+#include "assert.h"
 
 Triangle::Triangle():
 id(-1) {}
 
 Triangle::Triangle(Vertex* v0, Vertex* v1, Vertex* v2):
-		id(-1)
+    id(-1)
 {
-	v[0]=v0;
-	v[1]=v1;
-	v[2]=v2;
-	computeNormal();
-	v0->faceNormals.push_back(faceNormal);
-	v1->faceNormals.push_back(faceNormal);
-	v2->faceNormals.push_back(faceNormal);
+    v[0]=v0;
+    v[1]=v1;
+    v[2]=v2;
+    computeNormal();
+    int neighbour_count = 0;
+    for(int i = 0; i < 3; i++){
+	neighbours[i] = NULL;
+	for(list<Triangle*>::iterator iter = v[i]->faces.begin(); iter != v[i]->faces.end(); iter++ ){
+	    Vertex *_v = *(*iter)->v;
+	    int id = v[(i+1)%3]->id;
+	    if(id == _v[0].id || id == _v[1].id || id == _v[2].id){
+		Triangle **_neighbours = (*iter)->neighbours;
+		for(int j = 0; j < 3; j++){
+		    if(_neighbours[j] == NULL){
+			_neighbours[j] = this;
+			neighbours[neighbour_count] = *iter;
+			neighbour_count++;
+			assert(neighbour_count < 3);
+		    	break;
+		    }
+		}
+	    }
+	}
+	v[i]->faceNormals.push_back(faceNormal);
+	v[i]->faces.push_back(this);
+    }
 }
 
 Triangle::Triangle(Vertex* v0, Vertex* v1, Vertex* v2, int id):
@@ -36,6 +56,7 @@ Triangle::Triangle(Vertex* v0, Vertex* v1, Vertex* v2, int id):
 
 Triangle::~Triangle() {}
 
+#if 0
 bool Triangle::neigbourOf(Triangle &t){
     for(int i = 0; i < 3; i++)
     for(int j = i; j < 3; j++){
@@ -46,6 +67,7 @@ bool Triangle::neigbourOf(Triangle &t){
     }
     return false;
 }
+#endif
 
 void Triangle::computeNormal(){
 	a = v[1]->position - v[0]->position;

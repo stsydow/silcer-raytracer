@@ -29,11 +29,10 @@
 ROOT=..
 
 INC=-I/usr/include/freetype2 
-#CFLAGS	  = -g -Wall -Wextra -Wno-packed-bitfield-compat -pipe ${INC}
+OPTIMIZE = -march=core2 -msse4 -mcx16 -mpopcnt -msahf -O0
 #GPROF     = -pg
-LDFLAGS	  = -g ${GPROF} -O2 -Wall -Wextra -pipe ${LIBS}
-#Stefans flags: 
-CFLAGS	  = -g ${GPROF} -Wall -Wextra -Wno-packed-bitfield-compat -march=core2 -msse4 -mcx16 -mpopcnt -msahf -O2 -pipe ${INC}
+CFLAGS	  = -g ${GPROF} -Wall -Wextra -Wno-packed-bitfield-compat ${OPTIMIZE} -pipe ${INC}
+LDFLAGS	  = -g ${GPROF} -Wall -Wextra  ${OPTIMIZE} -pipe ${LIBS}
 CPP_SRCS = \
 Contour.cpp \
 Coordinate.cpp \

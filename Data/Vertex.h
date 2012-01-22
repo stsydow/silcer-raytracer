@@ -12,6 +12,7 @@
 #include "Coordinate.h"
 #include <list>
 
+class Triangle;
 class Vertex {
 public:
 	Vertex();
@@ -24,6 +25,7 @@ public:
 	Coordinate position;
 	Vector normal;
 	std::list<Vector> faceNormals;
+	std::list<Triangle*> faces;
 	float textureCoord[2];
 	int id;
 };

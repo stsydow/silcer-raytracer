@@ -27,11 +27,12 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
 
+OPTIMIZE = -march=core2 -msse4 -mcx16 -mpopcnt -msahf -O0
 LIBS      = -lSDLmain -lSDL -lGL -lGLU -lfreetype
 INC       = -I/usr/include/freetype2 
 #GPROF     = -pg
-CFLAGS	  = -g ${GPROF} -Wall -Wextra -Wno-packed-bitfield-compat -march=core2 -msse4 -mcx16 -mpopcnt -msahf -O2 -pipe ${INC}
-LDFLAGS	  = -g ${GPROF} -O2 -Wall -Wextra -pipe ${LIBS}
+CFLAGS	  = -g ${GPROF} -Wall -Wextra -Wno-packed-bitfield-compat ${OPTIMIZE} -pipe ${INC}
+LDFLAGS	  = -g ${GPROF} -Wall -Wextra  ${OPTIMIZE} -pipe ${LIBS}
 CPP_SRCS  = main.cpp 
 OBJ	  = ${CPP_SRCS:.cpp=.o}
 SUBDIRS   = Data Graphics
