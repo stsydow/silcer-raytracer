@@ -85,36 +85,37 @@ void Slicer::generate_support() {
 
     Vector down(0,-1,0);
     Triangle *triangles = model.triangles;
-    for (int i = 0; i < model.numTriangles;  i++) {
-	double acos_face = triangles[i].faceNormal*down;
-	if(acos_face > 0.7){
-	    support_triangles.push_back(&triangles[i]);
-	}
-    }
-
     Vertex * v;
     Ray weight_sense;
     bool hit;
     len_max = 0.0;
     weight_sense.setDirection(sliceing_plane.normal);
-    for (std::list<Triangle*>::const_iterator iter = support_triangles.begin();
-	    iter != support_triangles.end(); iter++){
-	for(int i = 0; i < 3; i++){
-	    v = (*iter)->v[i];
-	    if(support_vertices.find(v) == support_vertices.end()){
-	    	weight_sense.length = DOUBLEMAX;
-	    	weight_sense.origin = v->position;
-	    	hit = kdTree->traverse(weight_sense);
-	    	if (hit){
-	    	    support_vertices.insert(pair<Vertex*, double>(v, weight_sense.length));
-		    if(len_max < weight_sense.length){
-		    	len_max = weight_sense.length;
+    for (int i = 0; i < model.numTriangles;  i++) {
+	Triangle &t = triangles[i];
+	double acos_face = t.faceNormal*down;
+	if(acos_face > 0.7){
+	    support_triangles.push_back(&t);
+	    for(int i = 0; i < 3; i++){
+		v = t.v[i];
+		if(support_vertices.find(v) == support_vertices.end()){
+		    weight_sense.length = DOUBLEMAX;
+		    weight_sense.origin = v->position;
+		    hit = kdTree->traverse(weight_sense);
+		    if (hit){
+			support_vertices.insert(pair<Vertex*, double>(v, weight_sense.length));
+			if(len_max < weight_sense.length){
+			    len_max = weight_sense.length;
+			}
+		    }else{
+			support_vertices.insert(pair<Vertex*, double>(v, -1.0));
 		    }
-		}else{
-	    	    support_vertices.insert(pair<Vertex*, double>(v, -1.0));
 		}
 	    }
 	}
+    }
+
+    for (std::list<Triangle*>::const_iterator iter = support_triangles.begin();
+	    iter != support_triangles.end(); iter++){
 	
 	ComponentSet matches;
 	ComponentSet::iterator component_iter;
@@ -123,33 +124,34 @@ void Slicer::generate_support() {
 
 	    for (MeshComponent::const_iterator triangle_iter = (*component_iter)->begin();
 		triangle_iter != (*component_iter)->end(); triangle_iter++){
-		Triangle **neighbours = (*triangle_iter)->neighbours;
+		int *neighbours = (*triangle_iter)->neighbours;
 		for(int i = 0; i < 3; i++){
-		    assert(neighbours[i] != NULL); //mesh not closed
-		    if(neighbours[i] == *iter){ 
+		    assert(neighbours[i] > -1); //mesh not closed
+		    if(neighbours[i] == (*iter)->id){ 
 		    	matches.insert(*component_iter);	
 			break;
 		    }
 		}
 	    }
 	}
-	if(matches.size() > 1){
-
+	if(matches.size() == 1){
+	    (*matches.begin())->insert(*iter);
+	}else if(matches.size() > 1){
 	    MeshComponent *first_component = *matches.begin();
 	    ComponentSet::iterator merge_iter;
-	    for(merge_iter = matches.begin()++; merge_iter != matches.end(); merge_iter++){
+	    int expected_size;
+	    for(merge_iter = ++matches.begin(); merge_iter != matches.end(); merge_iter++){
+		expected_size = (*merge_iter)->size() + first_component->size();
 		first_component->insert((*merge_iter)->begin(), (*merge_iter)->end());
 	    	assert(support_components.erase(*merge_iter) == 1);
 	    }
-	}
-	else{
-	    std::set<Triangle*> *c = new std::set<Triangle*>();
+	    first_component->insert(*iter);
+	}else{
+	    MeshComponent *c = new MeshComponent();
 	    c->insert(*iter);
 	    support_components.insert(c);
 	}
     }
-    printf("components: %d\n", (int)support_components.size());
-    printf("triangles: %d\n", (int)support_triangles.size());
 }
 
 void Slicer::draw() {
@@ -173,10 +175,10 @@ void Slicer::draw() {
 
     Vertex * v;
     ComponentSet::const_iterator component_iter;
-    srand(22);
+    srand(232);
     for (component_iter = support_components.begin();
 	    component_iter != support_components.end(); component_iter++){
-	glColorLCh(70,70, PI*(rand() % 100) / 100);
+	glColorLCh(90,100, 2*PI*((rand() % 100) / 100.0));
     	for (MeshComponent::const_iterator iter = (*component_iter)->begin();
 	    iter != (*component_iter)->end(); iter++){
 	    for(int i = 0; i < 3; i++){

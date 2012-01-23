@@ -25,7 +25,7 @@ public:
 	Coordinate position;
 	Vector normal;
 	std::list<Vector> faceNormals;
-	std::list<Triangle*> faces;
+	std::list<int> faces;
 	float textureCoord[2];
 	int id;
 };

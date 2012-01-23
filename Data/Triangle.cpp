@@ -11,47 +11,38 @@
 Triangle::Triangle():
 id(-1) {}
 
-Triangle::Triangle(Vertex* v0, Vertex* v1, Vertex* v2):
-    id(-1)
-{
-    v[0]=v0;
-    v[1]=v1;
-    v[2]=v2;
-    computeNormal();
-    int neighbour_count = 0;
-    for(int i = 0; i < 3; i++){
-	neighbours[i] = NULL;
-	for(list<Triangle*>::iterator iter = v[i]->faces.begin(); iter != v[i]->faces.end(); iter++ ){
-	    Vertex *_v = *(*iter)->v;
-	    int id = v[(i+1)%3]->id;
-	    if(id == _v[0].id || id == _v[1].id || id == _v[2].id){
-		Triangle **_neighbours = (*iter)->neighbours;
-		for(int j = 0; j < 3; j++){
-		    if(_neighbours[j] == NULL){
-			_neighbours[j] = this;
-			neighbours[neighbour_count] = *iter;
-			neighbour_count++;
-			assert(neighbour_count < 3);
-		    	break;
-		    }
-		}
-	    }
-	}
-	v[i]->faceNormals.push_back(faceNormal);
-	v[i]->faces.push_back(this);
-    }
-}
-
-Triangle::Triangle(Vertex* v0, Vertex* v1, Vertex* v2, int id):
+Triangle::Triangle(Vertex* v0, Vertex* v1, Vertex* v2, int id, Triangle* store):
 	id(id)
 {
 	v[0]=v0;
 	v[1]=v1;
 	v[2]=v2;
 	computeNormal();
-	v0->faceNormals.push_back(faceNormal);
-	v1->faceNormals.push_back(faceNormal);
-	v2->faceNormals.push_back(faceNormal);
+	int neighbour_count = 0;
+	for(int i = 0; i < 3; i++){
+	    neighbours[i] = -1;
+	    for(list<int>::iterator iter = v[i]->faces.begin(); iter != v[i]->faces.end(); iter++ ){
+		//assert(store[*iter].id != id); // don't insert your self
+		Vertex **_v = store[*iter].v;
+		int v_id = v[(i+1)%3]->id;
+		if(v_id == _v[0]->id || v_id == _v[1]->id || v_id == _v[2]->id){
+		    int *_neighbours = store[*iter].neighbours;
+		    neighbours[neighbour_count] = store[*iter].id;
+		    //assert(neighbour_count < 3); // there should be only one neighbour at each side
+		    neighbour_count++;
+		    for(int j = 0; j < 3; j++){
+			//assert(_neighbours[j] != id); // don't insert your self
+			if(_neighbours[j] == -1){
+			    _neighbours[j] = id;
+			    break;
+			}
+		    	//assert(j < 2); // one neighbour at each side - not more then 3
+		    }
+		}
+	    }
+	    v[i]->faceNormals.push_back(faceNormal);
+	    v[i]->faces.push_back(id);
+	}
 }
 
 Triangle::~Triangle() {}

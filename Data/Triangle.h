@@ -14,12 +14,10 @@
 class Triangle {
 public:
 	Triangle();
-	Triangle(Vertex* v0, Vertex* v1, Vertex* v2);
-	Triangle(Vertex* v0, Vertex* v1, Vertex* v2, int id);
+	Triangle(Vertex* v0, Vertex* v1, Vertex* v2, int id, Triangle* store);
 	virtual ~Triangle();
 	void computeNormal();
-	Triangle *neighbours[3];
-	//bool neigbourOf(Triangle &t);
+	int neighbours[3];
 
 	Triangle& operator=(const Triangle& value);
 	Vector faceNormal;

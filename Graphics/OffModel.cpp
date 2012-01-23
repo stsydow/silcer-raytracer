@@ -126,7 +126,7 @@ void OffModel::readOff(const char* filename) {
 			for(int i=0 ; i <numTriangles; i++){
 				assert(fscanf(file, "%d %d %d %d", &n, &k, &l, &m) > 0);
 				assert(n == 3);
-				triangles[i] =  Triangle(vertices + k, vertices +l, vertices + m, i);
+				triangles[i] =  Triangle(vertices + k, vertices +l, vertices + m, i, triangles);
 				triangles[i].material = &material;
 			}
 			fclose (file);
