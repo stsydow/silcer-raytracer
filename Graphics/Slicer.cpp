@@ -86,7 +86,7 @@ void Slicer::generate_support() {
     Vector down(0,-1,0);
     Triangle *triangles = model.triangles;
     Vertex * v;
-    Ray weight_sense;
+    Ray weight_sense, base_sense;
     bool hit;
     len_max = 0.0;
     weight_sense.setDirection(sliceing_plane.normal);
@@ -114,6 +114,7 @@ void Slicer::generate_support() {
 	}
     }
 
+    base_sense.setDirection(-sliceing_plane.normal);
     for (std::list<Triangle*>::const_iterator iter = support_triangles.begin();
 	    iter != support_triangles.end(); iter++){
 	
@@ -131,6 +132,24 @@ void Slicer::generate_support() {
 		    	matches.insert(*component_iter);	
 			break;
 		    }
+		}
+	    }
+	}
+
+	for(int i = 0; i < 3; i++){
+	    v = (*iter)->v[i];
+	    if(base_vertices.find(v) == base_vertices.end()){
+		base_sense.length = DOUBLEMAX;
+		base_sense.origin = v->position;
+		hit = kdTree->traverse(base_sense);
+		if (hit){
+		    base_vertices.insert(pair<Vertex*, Coordinate>(v, base_sense.hitpoint));
+		    if(len_max < base_sense.length){
+			len_max = base_sense.length;
+		    }
+		}else{
+		    double dist = (sliceing_plane.normal * v->position.toVector()); //- sliceing_plane.originDist;
+		    base_vertices.insert(pair<Vertex*, Coordinate>(v, (v->position - sliceing_plane.normal * dist)));
 		}
 	    }
 	}
@@ -184,11 +203,6 @@ void Slicer::draw() {
 	    for(int i = 0; i < 3; i++){
 		v = (*iter)->v[i];
 
-		double len = support_vertices.find(v)->second / len_max;
-		double h = 1.75 * 2 * PI;
-		if (len >= 0){
-		    h = (1.75 - len) * 2 * PI;
-		}
 		glNormal3dv(v->normal);
 		glVertex3dv(v->position);
 	    }
@@ -212,6 +226,19 @@ void Slicer::draw() {
 	}
     }
     */
+    glEnd();
+    glBegin(GL_LINES);
+    for(map<Vertex*,Coordinate>::const_iterator v_iter = base_vertices.begin(); v_iter != base_vertices.end(); v_iter++){
+	double len = support_vertices.find(v)->second / len_max;
+	double h = 1.75 * 2 * PI;
+	if (len >= 0){
+	    h = (1.75 - len) * 2 * PI;
+	}
+	glColorLCh(90,100,h);
+	glVertex3dv(v_iter->first->position);
+	glVertex3dv(v_iter->second);
+    
+    }
     glEnd();
     glDisable(GL_LIGHTING);
 }

@@ -35,6 +35,7 @@ public:
 	std::list<Triangle*> support_triangles;
 	std::list<Contour> contour_set;
 	std::map<Vertex*, double> support_vertices;
+	std::map<Vertex*, Coordinate> base_vertices;
 	ComponentSet support_components;
 };
 
