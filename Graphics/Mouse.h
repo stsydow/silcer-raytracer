@@ -19,11 +19,14 @@ public:
 	void getPositon(int &x, int &y);
 	void getDeltaSinceClick(int &x, int &y);
 	void getDelta(int &x, int &y);
+	float getZoom();
+	void setZoom(float);
 	bool isLeftClicked() const;
 	bool isRightClicked() const;
 
 private:
 	int x, y;
+	float zoom;
 	int clickX, clickY;
 	bool leftButton,rightButton;
 	SDL_mutex *monitor;

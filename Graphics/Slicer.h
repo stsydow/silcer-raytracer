@@ -24,7 +24,6 @@ public:
 	Slicer(OffModel &model);
 	virtual ~Slicer();
 	virtual void draw();
-	void merge_contours();
 	void generate_support();
 	bool slice();
 	double len_max;
@@ -33,7 +32,7 @@ public:
 	KdNode *kdTree;
 	Plane sliceing_plane;
 	std::list<Triangle*> support_triangles;
-	std::list<Contour> contour_set;
+	std::list<Contour> contour_set, support_contour_set;
 	std::map<Vertex*, double> support_vertices;
 	std::map<Vertex*, Coordinate> base_vertices;
 	ComponentSet support_components;

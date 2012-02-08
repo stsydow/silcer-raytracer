@@ -17,7 +17,7 @@ public:
 	Triangle(Vertex* v0, Vertex* v1, Vertex* v2, int id, Triangle* store);
 	virtual ~Triangle();
 	void computeNormal();
-	int neighbours[3];
+	Triangle* neighbours[3];
 
 	Triangle& operator=(const Triangle& value);
 	Vector faceNormal;

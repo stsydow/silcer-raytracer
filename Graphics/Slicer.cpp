@@ -28,7 +28,7 @@ Slicer::~Slicer() {
 	delete kdTree;
 }
 
-void Slicer::merge_contours() {
+void merge_contours(std::list<Contour> &contour_set) {
     std::list<Contour>::iterator merge_iter;
     for(std::list<Contour>::iterator set_iter = contour_set.begin();set_iter != contour_set.end(); set_iter++){
 	merge_iter = set_iter;
@@ -70,13 +70,13 @@ bool Slicer::slice() {
 			    contour_set.push_back(contour);
 			}
 			if(i > 20){
-			    merge_contours();
+			    merge_contours(contour_set);
 			    i = 0;
 			}else{
 			    i++;
 			}
 		}
-		merge_contours();
+		merge_contours(contour_set);
 	}
 	return result;
 }
@@ -125,10 +125,10 @@ void Slicer::generate_support() {
 
 	    for (MeshComponent::const_iterator triangle_iter = (*component_iter)->begin();
 		triangle_iter != (*component_iter)->end(); triangle_iter++){
-		int *neighbours = (*triangle_iter)->neighbours;
+		Triangle **neighbours = (*triangle_iter)->neighbours;
 		for(int i = 0; i < 3; i++){
-		    assert(neighbours[i] > -1); //mesh not closed
-		    if(neighbours[i] == (*iter)->id){ 
+		    assert(neighbours[i]); //mesh not closed
+		    if(neighbours[i] == (*iter)){ 
 		    	matches.insert(*component_iter);	
 			break;
 		    }
@@ -171,6 +171,50 @@ void Slicer::generate_support() {
 	    support_components.insert(c);
 	}
     }
+
+    for (ComponentSet::iterator component_iter = support_components.begin();
+	    component_iter != support_components.end(); component_iter++){
+	
+	std::map<Vertex*, Vertex*> contour_edges;
+	for (MeshComponent::const_iterator triangle_iter = (*component_iter)->begin();
+		triangle_iter != (*component_iter)->end(); triangle_iter++){
+	    Triangle **neighbours = (*triangle_iter)->neighbours;
+	    Triangle *cur_t = *triangle_iter;
+	    for(int i = 0; i < 3; i++){
+		Triangle *t = neighbours[i];
+		assert(t);
+		if( (*component_iter)->find(t) == (*component_iter)->end() ){
+		    contour_edges.insert(pair<Vertex*, Vertex*>(cur_t->v[i],cur_t->v[(i+1)%3]));
+		}
+	    }
+	}
+
+	int append_count = 0;
+	for(std::map<Vertex*, Vertex*>::iterator edge_iter = contour_edges.begin(); edge_iter != contour_edges.end(); edge_iter++){
+
+	    Coordinate &c1 = edge_iter->first->position;
+	    Coordinate &c2 = edge_iter->second->position;
+	    bool inserted = false;
+	    for(std::list<Contour>::iterator set_iter = support_contour_set.begin();set_iter != support_contour_set.end(); set_iter++){
+		inserted = set_iter->insert(c1,c2);
+		if(inserted){
+		    if( append_count > 20){
+			merge_contours(support_contour_set);
+			append_count = 0;
+		    }else{
+		    	append_count++;
+		    }
+		    break;
+		}
+	    }
+	    if(!inserted){
+		Contour contour = Contour();
+		contour.insert(c1,c2);
+		support_contour_set.push_back(contour);
+	    }
+	}
+	merge_contours(support_contour_set);
+    }
 }
 
 void Slicer::draw() {
@@ -183,21 +227,27 @@ void Slicer::draw() {
 	    set_iter != contour_set.end(); set_iter++) {
 	set_iter->draw();
     }
+    srand(32);
+    for (std::list<Contour>::const_iterator set_iter = support_contour_set.begin();
+	    set_iter != support_contour_set.end(); set_iter++) {
+	set_iter->draw();
+    }
     if(sliceing_plane.originDist < 0.7){
 	sliceing_plane.originDist += 0.003;
     }else{
 	sliceing_plane.originDist = 0.0;
     }
     glEnable(GL_LIGHTING);
+#if 1
     glBegin(GL_TRIANGLES);
-    glColor4f(1.0f,0.0f,0.0f,0.2f);
+    glColor4f(1.0f,0.0f,0.0f,0.4f);
 
     Vertex * v;
     ComponentSet::const_iterator component_iter;
     srand(232);
     for (component_iter = support_components.begin();
 	    component_iter != support_components.end(); component_iter++){
-	glColorLCh(90,100, 2*PI*((rand() % 100) / 100.0));
+	//glColorLCh(90,100, 2*PI*((rand() % 100) / 100.0));
     	for (MeshComponent::const_iterator iter = (*component_iter)->begin();
 	    iter != (*component_iter)->end(); iter++){
 	    for(int i = 0; i < 3; i++){
@@ -208,7 +258,10 @@ void Slicer::draw() {
 	    }
 	}
     }
+    glEnd();
+#endif
     /*
+    glBegin(GL_LINES);
     for (std::list<Triangle*>::const_iterator iter = support_triangles.begin();
 	    iter != support_triangles.end(); iter++){
 	
@@ -225,8 +278,9 @@ void Slicer::draw() {
 	    glVertex3dv(v->position);
 	}
     }
-    */
     glEnd();
+    */
+#if 0
     glBegin(GL_LINES);
     for(map<Vertex*,Coordinate>::const_iterator v_iter = base_vertices.begin(); v_iter != base_vertices.end(); v_iter++){
 	double len = support_vertices.find(v)->second / len_max;
@@ -241,4 +295,5 @@ void Slicer::draw() {
     }
     glEnd();
     glDisable(GL_LIGHTING);
+#endif
 }

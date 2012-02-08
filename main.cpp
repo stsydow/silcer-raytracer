@@ -177,6 +177,7 @@ int dataPainter(__attribute__((unused)) void *p)
 		modelView.transformation[12] = -0.25;
 		modelView.transformation[13] = -0.25;
 		modelView.transformation[14] = 2;
+		mouse.setZoom(2);
 		//modelView.transformation.rotate(3.1415/8, y_Axes);
 		modelView.transformation.rotate(3.1415/2, x_Axes);
 		OffModel model("meshes/bunny.off");
@@ -244,6 +245,7 @@ int dataPainter(__attribute__((unused)) void *p)
 				if(x != 0)modelView.transformation[12] += x/100.0;
 				if(y != 0)modelView.transformation[13] -= y/100.0;
 			}
+			modelView.transformation[14] = mouse.getZoom();
 			console.setText(messageBuffer); //FIXME race condition?
 			Display.drawEverything();
 

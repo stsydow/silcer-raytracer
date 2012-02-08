@@ -85,7 +85,7 @@ void Perspective::apply()
 	0,0,0,offset[e_Z]};
 	glMultMatrixd(C);
 	glTranslatef(offset[e_X], offset[e_Y], 0);
-	gluPerspective( verticalViewAngle, ratio, 1.0f, 10000.0 );
+	gluPerspective( verticalViewAngle, ratio, 0.1f, 10000.0 );
 	glRotatef(rotation[e_Z], 0,0,1); //TODO right place?
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
