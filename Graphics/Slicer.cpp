@@ -22,6 +22,8 @@ Slicer::Slicer(OffModel &model) :
 
 	sliceing_plane.normal[1] = 1;
 	sliceing_plane.originDist = 0.1;
+	scaffold_plane[0].normal[0] = 1;
+	scaffold_plane[1].normal[2] = 1;
 }
 
 Slicer::~Slicer() {
@@ -223,15 +225,52 @@ void Slicer::draw() {
     	generate_support();
     }
     srand(42);
+    std::list<Coordinate> intersections;
     for (std::list<Contour>::const_iterator set_iter = contour_set.begin();
 	    set_iter != contour_set.end(); set_iter++) {
 	set_iter->draw();
+	Coordinate v_max = Coordinate(set_iter->min);
+	Coordinate v_min = Coordinate(set_iter->max);
+	Plane &p = scaffold_plane[0];
+	if(p.normal[0] >= 0){
+		v_max[0] = set_iter->max[0];
+		v_min[0] = set_iter->min[0];
+	}
+	if(p.normal[1] >= 0){
+		v_max[1] = set_iter->max[1];
+		v_min[1] = set_iter->min[1];
+	}
+	if(p.normal[2] >= 0){
+		v_max[2] = set_iter->max[2];
+		v_min[2] = set_iter->min[2];
+	}
+	double start_dist = p.normal* v_min.toVector();
+	double dist_span = p.normal* (v_max - v_min);
+	glColorLCh(90,100, 2*PI*((rand() % 100) / 100.0));
+	glDisable(GL_DEPTH_TEST);
+	for(int i = 0; i < 10; i++){
+	    p.originDist =  start_dist + dist_span*((i+0.5)/10.0);
+	    if(set_iter->intersect(p, intersections)){
+		glBegin(GL_LINES);
+		for (std::list<Coordinate>::const_iterator iter = intersections.begin();
+			iter != intersections.end(); iter++) {
+		    glVertex3dv(*iter);
+
+		}
+		glVertex3dv(v_min + p.normal * (p.originDist - start_dist));
+		glEnd();
+		intersections.clear();
+	    }
+	}
+    	glEnable(GL_DEPTH_TEST);
     }
+    /*
     srand(32);
     for (std::list<Contour>::const_iterator set_iter = support_contour_set.begin();
 	    set_iter != support_contour_set.end(); set_iter++) {
 	set_iter->draw();
     }
+    */
     if(sliceing_plane.originDist < 0.7){
 	sliceing_plane.originDist += 0.003;
     }else{

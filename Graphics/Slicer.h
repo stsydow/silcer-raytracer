@@ -30,7 +30,7 @@ public:
 
 	OffModel &model;
 	KdNode *kdTree;
-	Plane sliceing_plane;
+	Plane sliceing_plane, scaffold_plane[2];
 	std::list<Triangle*> support_triangles;
 	std::list<Contour> contour_set, support_contour_set;
 	std::map<Vertex*, double> support_vertices;

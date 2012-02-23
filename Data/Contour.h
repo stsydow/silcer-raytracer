@@ -12,6 +12,7 @@
 #include <list>
 #include <assert.h>
 #include "Coordinate.h"
+#include "Plane.h"
 
 class Contour: public Drawable {
 public:
@@ -23,7 +24,7 @@ public:
 
 	bool insert(const Coordinate &c1, const Coordinate &c2);
 	bool merge(const Contour &c);
-
+	bool intersect(Plane &p, std::list<Coordinate> &intersections) const; 
 	inline int size() const {
 		int result = points.size();
 		if (!isClosed && result > 0)
@@ -75,6 +76,7 @@ public:
 			printf(" closed");
 	}
 
+	Coordinate max, min;
 private:
 	std::list<Coordinate> points;
 	bool isClosed;

@@ -43,7 +43,7 @@ public:
 		result[2] -= value[2];
 		return result;
 	}
-	const inline Vector toVector(){
+	const inline Vector toVector() const{
 		return Vector(X);
 	}
 
