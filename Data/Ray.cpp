@@ -37,14 +37,18 @@ Ray::~Ray() {
 //             2 = are in the same plane
 int Ray::intersect(const Triangle &T, bool reverse_normal)
 {
-	if(originTriangle && originTriangle == &T) return 0;
-    float rev = reverse_normal?-1:1;
+    assert(direction[0] || direction[1] || direction[2]);
+    if(originTriangle && originTriangle == &T) return 0;
+    float rev = reverse_normal?1:-1;
     float a = (T.faceNormal*rev)*(T.v[0]->position - origin);
     float b = (T.faceNormal*rev)*direction;
-    if (fabs(b) < EPSILON) {     // ray is parallel to triangle plane
-        if (a == 0)                // ray lies in triangle plane
+    if (b < EPSILON) {     // ray is parallel to triangle plane or wrong direction
+        if (b > -EPSILON && a == 0){                // ray lies in triangle plane
+	    printf("WARN ray exactly lies in triangle (id %d)\n", T.id);
             return 2;
-        else return 0;             // ray disjoint from plane
+	}else{
+	    return 0;             // ray disjoint from plane or wrong direction
+	}
     }
     // get intersect point of ray with triangle plane
     float newLength = a / b;

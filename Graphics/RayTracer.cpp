@@ -15,8 +15,7 @@ RayTracer::RayTracer(OffModel &model):
 	size(height * width),
 	camera(width,height,pixelSize),
 	kdTree(NULL),
-	running(false),
-	ready(false)
+	running(false)
 {
 	TriangleList triangles;
 	for(int i =0 ; i <  model.numTriangles; i++){
@@ -73,7 +72,7 @@ bool RayTracer::castRay(Ray &ray, int stage){
 				}
 			}
 		}
-		if(stage < 4){
+		if(stage < 10){
 			ray.nextRay = new Ray();
 			ray.nextRay->origin = ray.hitpoint;
 			ray.nextRay->originTriangle = ray.destinationTriangle;
@@ -110,7 +109,7 @@ bool RayTracer::castRay(Ray &ray, int stage){
 
 void RayTracer::render(float start, float end){
 	running = true;
-	ready = false;
+	assert(!camera.is_record());
 	if(end > 1) end = 1;
 	SDL_Color p;
 	SDL_Color *pixels = (SDL_Color *)image->pixels;
@@ -135,11 +134,10 @@ void RayTracer::render(float start, float end){
 	model.doLighting = 1;
 }
 
-void RayTracer::record(){
-	if(!running && !ready){
-		camera.updateView();
-		ready = true;
-	}
+void RayTracer::prepare(){
+    if(!running){
+	camera.updateView();
+    }
 }
 
 void RayTracer::save(const char *filename)

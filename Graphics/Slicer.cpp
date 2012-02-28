@@ -219,38 +219,61 @@ void Slicer::generate_support() {
     }
 }
 
+bool sort_x(const Coordinate &a, const Coordinate &b){
+    return a[0] < b[0];
+}
+
+bool sort_y(const Coordinate &a, const Coordinate &b){
+    return a[1] < b[1];
+}
+
+bool sort_z(const Coordinate &a, const Coordinate &b){
+    return a[2] < b[2];
+}
+
 void Slicer::draw() {
     slice();
     if(support_triangles.empty()){
     	generate_support();
     }
     srand(42);
-    std::list<Coordinate> intersections;
     for (std::list<Contour>::const_iterator set_iter = contour_set.begin();
 	    set_iter != contour_set.end(); set_iter++) {
 	set_iter->draw();
-	Coordinate v_max = Coordinate(set_iter->min);
-	Coordinate v_min = Coordinate(set_iter->max);
-	Plane &p = scaffold_plane[0];
-	if(p.normal[0] >= 0){
-		v_max[0] = set_iter->max[0];
-		v_min[0] = set_iter->min[0];
+    }
+
+    std::list<Coordinate> intersections;
+    Coordinate v_max = Coordinate(kdTree->get_min());
+    Coordinate v_min = Coordinate(kdTree->get_max());
+    for(int plane_idx = 0; plane_idx < 2; plane_idx++){
+	Plane &p = scaffold_plane[plane_idx];
+	bool (*_sort)(const Coordinate& ,const Coordinate&);
+	if(plane_idx == 0){
+	    _sort = &sort_z;
+	}else if(plane_idx == 1){
+	    _sort = &sort_x;
 	}
-	if(p.normal[1] >= 0){
-		v_max[1] = set_iter->max[1];
-		v_min[1] = set_iter->min[1];
-	}
-	if(p.normal[2] >= 0){
-		v_max[2] = set_iter->max[2];
-		v_min[2] = set_iter->min[2];
+
+	for(int i = 0; i < 3; i++){
+	    if(p.normal[i] >= 0){
+		double tmp = v_max[i];
+		v_max[i] = v_min[i];
+		v_min[i] = tmp;
+	    }
 	}
 	double start_dist = p.normal* v_min.toVector();
 	double dist_span = p.normal* (v_max - v_min);
 	glColorLCh(90,100, 2*PI*((rand() % 100) / 100.0));
 	glDisable(GL_DEPTH_TEST);
-	for(int i = 0; i < 10; i++){
-	    p.originDist =  start_dist + dist_span*((i+0.5)/10.0);
-	    if(set_iter->intersect(p, intersections)){
+	for(int i = 0; i < 100; i++){
+	    p.originDist =  start_dist + dist_span*((i+0.5)/100.0);
+	    bool hit = false;
+	    for (std::list<Contour>::const_iterator set_iter = contour_set.begin();
+		    set_iter != contour_set.end(); set_iter++) {
+		hit |= set_iter->intersect(p, intersections);
+	    }
+	    intersections.sort(_sort);
+	    if(hit) {
 		glBegin(GL_LINES);
 		for (std::list<Coordinate>::const_iterator iter = intersections.begin();
 			iter != intersections.end(); iter++) {
@@ -259,11 +282,11 @@ void Slicer::draw() {
 		}
 		glVertex3dv(v_min + p.normal * (p.originDist - start_dist));
 		glEnd();
-		intersections.clear();
 	    }
+	    intersections.clear();
 	}
-    	glEnable(GL_DEPTH_TEST);
     }
+    glEnable(GL_DEPTH_TEST);
     /*
     srand(32);
     for (std::list<Contour>::const_iterator set_iter = support_contour_set.begin();

@@ -17,7 +17,7 @@ public:
 	virtual ~RayTracer();
 	bool castRay(Ray &ray, int stage);
 	void render(float start = 0, float end= 1);
-	void record();
+	void prepare();
 	void save(const char *filename);
 	OffModel &model;
 	double pixelSize;
@@ -25,7 +25,7 @@ public:
 	RayTraceCamera camera;
 	KdNode *kdTree;
 	SDL_Surface *image;
-	bool running, ready;
+	bool running;
 
 };
 

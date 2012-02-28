@@ -7,6 +7,7 @@
 
 #include "RayTraceCamera.h"
 #include <limits.h>
+#include <assert.h>
 
 RayTraceCamera::RayTraceCamera(int width, int height, double pixelSize):
 	height(height),
@@ -94,6 +95,7 @@ void RayTraceCamera::draw()
 				offset = result;
 				gluUnProject(i*pixelSize, viewport[3] - j*pixelSize, 1, modelview, projection, viewport, &result[0] , &result[1], &result[2]);
 				pixelRays[j*width + i].setDirection((result - offset).normalize());
+				assert(pixelRays[j*width + i].direction.abs() > 0.99);
 				SDL_UnlockMutex(pixelRays[j*width + i].lock);
 			}
 		}

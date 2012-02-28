@@ -28,6 +28,7 @@ char *messageBufferEnd = messageBuffer;
 RayTracer *tracer;
 Slicer *slicer;
 bool resetView;
+bool do_render = false;
 
 string IntToString(int i)
 {
@@ -75,7 +76,8 @@ int eventProcessor(__attribute__((unused)) void *p)
 				{
 					quit = true;
 				}else if(myEvent->key.keysym.sym == 'r'){
-					tracer->record();
+					tracer->prepare();
+					do_render = true;
 				}else if(myEvent->key.keysym.sym == 'v'){
 					resetView = true;
 				}else{
@@ -141,7 +143,7 @@ int dataPainter(__attribute__((unused)) void *p)
 		canvas.setView(view);
 
 		ViewPort image(0, 0, 1280, 800);
-		//image.setView(view);
+		image.setView(view);
 		ViewPort messages(980, 0, 300, 100);
 		messages.setView(view);
 
@@ -185,32 +187,44 @@ int dataPainter(__attribute__((unused)) void *p)
 
 #if 0
 		{//add a bottom plane
-			Vertex *v1 = new Vertex(-50,0.0,-50);
-			Vertex *v2 = new Vertex(0,0.0,40);
-			Vertex *v3 = new Vertex(50,0.0,-50);
-			model.triangles[model.numTriangles] = Triangle(v1, v2, v3);
+		    // HACK slots are reserved in OffModel.cpp
+
+		    	Vertex *verts = model.vertices + model.numVertices;
+
+			verts[0] = Vertex(-50,0.0,-50);
+			verts[1] = Vertex(0,0.0,40);
+			verts[2] = Vertex(50,0.0,-50);
+			model.triangles[model.numTriangles] = Triangle(
+				&verts[0],
+				&verts[1],
+				&verts[2], model.numTriangles, model.triangles);
 			model.triangles[model.numTriangles].material = &model.material;
-			v1->calculateNormal();
-			v2->calculateNormal();
-			v3->calculateNormal();
-			v1->textureCoord[0] = 0.3;
-			v1->textureCoord[1] = 0.3;
-			v2->textureCoord[0] = 0.3;
-			v2->textureCoord[1] = 0.6;
-			v3->textureCoord[0] = 0.6;
-			v3->textureCoord[1] = 0.6;
+
+			verts[0].calculateNormal();
+			verts[1].calculateNormal();
+			verts[2].calculateNormal();
+			verts[2].textureCoord[0] = 0.3;
+			verts[2].textureCoord[1] = 0.3;
+			verts[1].textureCoord[0] = 0.3;
+			verts[1].textureCoord[1] = 0.6;
+			verts[0].textureCoord[0] = 0.6;
+			verts[0].textureCoord[1] = 0.6;
+
+			model.numVertices += 3;
 			model.numTriangles ++;
 		}
 #endif
 
 		tracer = new RayTracer(model);
 		slicer = new Slicer(model);
+		canvas.add(&modelView);
 		modelView.addObj(&model);
 		modelView.addObj(&tracer->camera);
-		modelView.addObj(slicer);
-		//modelView.addObj(tracer->kdTree);
-		canvas.add(&modelView);
 		Display.drawEverything();
+		modelView.addObj(slicer);
+		Display.drawEverything();
+		//modelView.addObj(tracer->kdTree);
+		//Display.drawEverything();
 
 //		image.add(&tracer->image);
 
@@ -249,8 +263,9 @@ int dataPainter(__attribute__((unused)) void *p)
 			console.setText(messageBuffer); //FIXME race condition?
 			Display.drawEverything();
 
-			if(!tracer->running && tracer->ready){
-				const int THREADS = 9;
+			if( do_render && !tracer->running && !tracer->camera.is_record()){
+				const int THREADS = 4;
+				do_render = false;
 				lastView = modelView.transformation;
 				float limits[THREADS +1];
 				limits[0] = 0;

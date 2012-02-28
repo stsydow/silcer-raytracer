@@ -30,15 +30,24 @@ public:
 	bool traverse(Plane &p, std::set<Triangle*> &triangle_set) const;
 	bool traverse(Plane &p, std::list<Contour> &contour_set) const;
 	virtual void draw();
+	inline const Coordinate& get_min() const{
+	    return real_min;
+	}
+	inline const Coordinate& get_max() const{
+	    return real_max;
+	}
 private:
-	void computeMedian(const TriangleList &triangles, int size);
+	void computeSplit(const TriangleList &triangles, int size);
 	int level;
 	int size;
+	int size_unique;
 	double splitValue;
 	KdNode *left;
 	KdNode *right;
 	TriangleList items;
-	Coordinate min, max;
+	Coordinate split_min, split_max;
+	Coordinate real_min, real_max;
+	Coordinate search_min, search_max;
 };
 
 #endif /* KDNODE_H_ */

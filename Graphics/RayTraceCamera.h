@@ -22,6 +22,9 @@ public:
 	virtual ~RayTraceCamera();
 	virtual void draw();
 	void updateView();
+	inline bool is_record(){
+		return record;
+	}
 
 protected:
 	Ray *pixelRays;

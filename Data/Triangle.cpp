@@ -42,7 +42,7 @@ Triangle::~Triangle() {}
 
 void Triangle::computeNormal(){
 	a = v[1]->position - v[0]->position;
-	b = v[2]->position - v[1]->position;
+	b = v[2]->position - v[0]->position;
 
 	center = v[0]->position + (a + b)*0.25;
 	faceNormal = a.times(b).normalize();

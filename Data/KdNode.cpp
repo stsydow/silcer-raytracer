@@ -15,19 +15,29 @@ const Vector one(1,1,1);
 KdNode::KdNode(int level):
 	level(level),
 	size(0),
+	size_unique(0),
 	left(NULL),
 	right(NULL),
-	min(-DOUBLEMAX,-DOUBLEMAX,-DOUBLEMAX),
-	max(-DOUBLEMAX,-DOUBLEMAX,-DOUBLEMAX)
+	split_min(-DOUBLEMAX,-DOUBLEMAX,-DOUBLEMAX),
+	split_max(DOUBLEMAX,DOUBLEMAX,DOUBLEMAX),
+	real_min(0,0,0),
+	real_max(0,0,0),
+	search_min(-DOUBLEMAX,-DOUBLEMAX,-DOUBLEMAX), // don't zero it: split will uses intesect()
+	search_max(DOUBLEMAX,DOUBLEMAX,DOUBLEMAX) 
 {}
 
 KdNode::KdNode(const TriangleList &triangles, int size):
 	level(0),
 	size(size),
+	size_unique(size),
 	left(NULL),
 	right(NULL),
-	min(-DOUBLEMAX,-DOUBLEMAX,-DOUBLEMAX),
-	max(DOUBLEMAX,DOUBLEMAX,DOUBLEMAX)
+	split_min(-DOUBLEMAX,-DOUBLEMAX,-DOUBLEMAX),
+	split_max(DOUBLEMAX,DOUBLEMAX,DOUBLEMAX),
+	real_min(0,0,0),
+	real_max(0,0,0),
+	search_min(-DOUBLEMAX,-DOUBLEMAX,-DOUBLEMAX), // don't zero it: split will uses intesect()
+	search_max(DOUBLEMAX,DOUBLEMAX,DOUBLEMAX)
 {
 	items = triangles;
 	split();
@@ -39,7 +49,7 @@ KdNode::~KdNode() {
 	// TODO delete items
 }
 
-void KdNode::computeMedian(const TriangleList &triangles, int size){
+void KdNode::computeSplit(const TriangleList &triangles, int size){
 		int dimension = level%3;
 		int testRatio = (int)(size/sqrt(size +1));
 		std::list<double> decisionSet;
@@ -53,60 +63,101 @@ void KdNode::computeMedian(const TriangleList &triangles, int size){
 			}
 		}
 		decisionSet.sort();
-//		std::list<double>::iterator median = decisionSet.begin();
-//		for(int i = 0; i < decisionSetSize/2; i++) median++;
+		std::list<double>::iterator median = decisionSet.begin();
+		for(int i = 0; i < decisionSetSize/2; i++) median++;
+		splitValue = (*median);
+		/*
 		double minValue = *decisionSet.begin();
 		double maxValue = *(--decisionSet.end());
 		if((max[dimension] - maxValue) > (max[dimension] - min[dimension])/2) splitValue = maxValue;
 		else if((minValue - min[dimension]) > (max[dimension] - min[dimension])/2) splitValue = minValue;
-		else 		splitValue = (min[dimension] + max[dimension])/2;//splitValue = (*median);
+		else 		splitValue = (min[dimension] + max[dimension])/2;
+		*/
 }
 
 void KdNode::split(){
-	if(size > 4 && level < 14){
-		int dimension = level%3;
-		computeMedian(items, size);
+	int dimension = level%3;
+	if(size_unique > 16 && level < 32){
+		computeSplit(items, size);
 		left = new KdNode(level +1);
-		left->min = min;
-		left->max = max;
-		left->max[dimension] = splitValue;
+		left->split_min = split_min;
+		left->split_max = split_max;
+		left->split_max[dimension] = splitValue;
+		left->search_max = left->split_max;
+		left->search_min = left->split_min;
 		right = new KdNode(level +1);
-		right->min = min;
-		right->min[dimension] = splitValue;
-		right->max = max;
+		right->split_min = split_min;
+		right->split_min[dimension] = splitValue;
+		right->split_max = split_max;
+		right->search_max = right->split_max;
+		right->search_min = right->split_min;
 
 		for(TriangleList::const_iterator iter = items.begin();iter != items.end(); iter++){
 			Triangle &t = *(*iter);
 
-			if(left->intersect(t)){
+			bool match_left = left->intersect(t);
+			bool match_right = right->intersect(t);
+
+			if(match_left){
 				left->items.push_back(&t);
 				left->size++;
 			}
-			if(right->intersect(t)){
+			if(match_right){
 				right->items.push_back(&t);
 				right->size++;
 			}
+			if(match_left && !match_right){
+				left->size_unique++;
+			}else if(match_right && !match_left){
+				right->size_unique++;
+			}
 		}
-
 		left->split();
 		right->split();
 		items.clear();
 	}
+	if(left && right){
+	    for(int i = 0; i < 3; i++ ){
+		real_min[i] = left->real_min[i] < right->real_min[i] ? left->real_min[i] : right->real_min[i];
+		real_max[i] = left->real_max[i] > right->real_max[i] ? left->real_max[i] : right->real_max[i];
+	    }
+	}else{
+	    TriangleList::const_iterator iter = items.begin();
+	    real_min = (*iter)->min;
+	    real_max = (*iter)->max;
+	    for(;iter != items.end(); iter++){
+		Triangle &t = *(*iter);
+		for(int i = 0; i < 3; i++ ){
+		    if(real_min[i] > t.min[i]){ 
+			real_min[i] = t.min[i]; 
+		    }
+		    if(real_max[i] < t.max[i]){
+			real_max[i] = t.max[i];
+		    }
+		}
+	    }
+	}
+	for(int i = 0; i < 3; i++ ){
+	    search_min[i] = 0.001*(real_min[i] - real_max[i]) + real_min[i] > split_min[i] ?  0.001 *(real_min[i] - real_max[i]) + real_min[i] : split_min[i];
+	    search_max[i] = 0.001*(real_max[i] - real_min[i]) + real_max[i] < split_max[i] ? 0.001*(real_max[i] - real_min[i]) + real_max[i] : split_max[i];
+	}
+	assert(!right || right->split_min[dimension] >= splitValue);
+	assert(!left || left->split_max[dimension] <= splitValue);
 }
 bool KdNode::intersect(Plane &p) const{
-	Coordinate v_max = Coordinate(min);
-	Coordinate v_min = Coordinate(max);
+	Coordinate v_max = Coordinate(search_min);
+	Coordinate v_min = Coordinate(search_max);
 	if(p.normal[0] >= 0){
-		v_max[0] = max[0];
-		v_min[0] = min[0];
+		v_max[0] = search_max[0];
+		v_min[0] = search_min[0];
 	}
 	if(p.normal[1] >= 0){
-		v_max[1] = max[1];
-		v_min[1] = min[1];
+		v_max[1] = search_max[1];
+		v_min[1] = search_min[1];
 	}
 	if(p.normal[2] >= 0){
-		v_max[2] = max[2];
-		v_min[2] = min[2];
+		v_max[2] = search_max[2];
+		v_min[2] = search_min[2];
 	}
 	float dist_max = v_max.toVector()*p.normal;
 	float dist_min = v_min.toVector()*p.normal;
@@ -183,33 +234,35 @@ bool KdNode::traverse(Plane &p, std::list<Contour> &contour_set) const{
 
 bool KdNode::intersect(Triangle &t){
 	return	(
-	        (min[0] <= t.max[0]+EPSILON) && (max[0]+EPSILON >= t.min[0]) &&
-	        (min[1] <= t.max[1]+EPSILON) && (max[1]+EPSILON >= t.min[1]) &&
-	        (min[2] <= t.max[2]+EPSILON) && (max[2]+EPSILON >= t.min[2])
+	        (search_min[0] <= t.max[0]+EPSILON) && (search_max[0]+EPSILON >= t.min[0]) &&
+	        (search_min[1] <= t.max[1]+EPSILON) && (search_max[1]+EPSILON >= t.min[1]) &&
+	        (search_min[2] <= t.max[2]+EPSILON) && (search_max[2]+EPSILON >= t.min[2])
 	    );
 }
 
 bool KdNode::intersect(Ray &ray, double &near_, double &far_){
 
-	near_ = -DOUBLEMAX;
+	near_ = 0;
 	far_ = DOUBLEMAX;
 	double t1;
 	double t2;
-	double temp;
+
 	for(int i = 0; i< 3; i++){
-		t1 = (min[i] - ray.origin[i]) * ray.inv_direction[i];
-		t2 = (max[i] - ray.origin[i]) * ray.inv_direction[i];
-		if(t1 > t2)
-		{
-			temp = t1;
-			t1 = t2;
-			t2 = temp;
+	    	double &div = ray.inv_direction[i];
+		if(div >= 0){
+			t1 = (search_min[i] - ray.origin[i]) * div;
+			t2 = (search_max[i] - ray.origin[i]) * div;
+		}else{
+			t2 = (search_min[i] - ray.origin[i]) * div;
+			t1 = (search_max[i] - ray.origin[i]) * div;
 		}
+
+		if((near_ > t2) || (t1 > far_)) return false;
 		if(t1 > near_) near_ = t1;
 		if(t2 < far_) far_ = t2;
-		if(near_ > far_) return false;
-		if(far_ < 0.0) return false;
 	}
+	far_;
+	near_;
 	return true;
 }
 
@@ -217,28 +270,43 @@ bool KdNode::traverse(Ray &ray, bool inner){
 	bool result = false;
 	if(left){
 		double leftNear, leftFar,rightNear,rightFar;
-		if(!left->intersect(ray, leftNear, leftFar)) return right->traverse(ray);
-		if(!right->intersect(ray, rightNear, rightFar)) return left->traverse(ray);
-		if(rightNear < leftNear){
-			ray.length = rightFar+EPSILON;
-			if(right->traverse(ray)) result = true;
-			else {
-				ray.length = leftFar;
-				result = left->traverse(ray);
+		bool match_left = left->intersect(ray, leftNear, leftFar);
+		bool match_right = right->intersect(ray, rightNear, rightFar);
+
+		if(match_left){
+		    if(match_right){
+			if(rightNear < leftNear){
+			    ray.length = rightFar + EPSILON;
+			    if(right->traverse(ray)){
+				return true;
+			    } else {
+				ray.length = leftFar + EPSILON;
+				return left->traverse(ray);
+			    }
+			}else{
+			    ray.length = leftFar + EPSILON;
+			    if(left->traverse(ray)){
+				return true;
+			    } else {
+				ray.length = rightFar + EPSILON;
+				return right->traverse(ray);
+			    }
 			}
+
+		    }else{
+		    	return left->traverse(ray);
+		    }
 		}else{
-			ray.length = leftFar+EPSILON;
-			if(left->traverse(ray)) result = true;
-			else {
-				ray.length = rightFar+EPSILON;
-				result = right->traverse(ray);
-			}
+		    if(match_right){
+		    	return right->traverse(ray);
+		    }else{
+		    	return false;
+		    }
 		}
 
 	}else{
 		for(TriangleList::const_iterator iter = items.begin();iter != items.end(); iter++){
-			Triangle &t = *(*iter);
-			if(ray.intersect(t, inner) == 1) result = true;
+			result |= (ray.intersect(*(*iter), inner) == 1);
 		}
 	}
 	return result;
@@ -246,40 +314,40 @@ bool KdNode::traverse(Ray &ray, bool inner){
 
 void KdNode::draw(){
 	if(level == 0){
-		glBegin(GL_LINES);
 		if(left) left->draw();
 		if(right) right->draw();
-		glEnd();
 	}else {
-		if(!(fabs(min[0]) > 2 || fabs(min[1]) > 2 || fabs(min[2]) > 2 || fabs(max[0]) > 2 || fabs(max[1]) > 2|| fabs(max[2]) > 2) && size > 0){
-			double minx = min[0];
-			double miny = min[1];
-			double minz = min[2];
-			double maxx = max[0];
-			double maxy = max[1];
-			double maxz = max[2];
-			Vector color(level%3,(level+1)%3,(level+2)%3);
+		if(!left && !right){
+			double minx = search_min[0];
+			double miny = search_min[1];
+			double minz = search_min[2];
+			double maxx = search_max[0];
+			double maxy = search_max[1];
+			double maxz = search_max[2];
+			Vector color(level/32.0,size/30.0, size_unique/12.0);
+			glBegin(GL_LINE_STRIP);
 			glColor3dv(color);
 			glVertex3d(minx,miny, minz);
 			glVertex3d(minx,miny, maxz);
-			glVertex3d(minx,miny, minz);
+			glVertex3d(minx,maxy, maxz);
 			glVertex3d(minx,maxy, minz);
 			glVertex3d(minx,miny, minz);
-			glVertex3d(maxx,miny, minz);
 
-			glVertex3d(maxx,maxy, maxz);
-			glVertex3d(maxx,maxy, minz);
-			glVertex3d(maxx,maxy, maxz);
+			glVertex3d(maxx,miny, minz);
 			glVertex3d(maxx,miny, maxz);
 			glVertex3d(maxx,maxy, maxz);
-			glVertex3d(minx,maxy, maxz);
+			glVertex3d(maxx,maxy, minz);
+			glVertex3d(maxx,miny, minz);
+			glEnd();
 
+			glBegin(GL_LINES);
+			glVertex3d(minx,maxy, minz);
+			glVertex3d(maxx,maxy, minz);
 			glVertex3d(minx,miny, maxz);
 			glVertex3d(maxx,miny, maxz);
-			glVertex3d(minx,maxy, minz);
 			glVertex3d(minx,maxy, maxz);
-			glVertex3d(maxx,miny, minz);
-			glVertex3d(maxx,maxy, minz);
+			glVertex3d(maxx,maxy, maxz);
+			glEnd();
 		}
 		if(left){
 			left->draw();

@@ -12,7 +12,7 @@
 #include "../Data/constants.h"
 
 OffModel::OffModel(const char* filename):
-	showNormals(OFF),
+	showNormals(OFF),	
 	showTexture(ON),
 	doLighting(ON)
 {
@@ -93,8 +93,9 @@ void OffModel::readOff(const char* filename) {
 			int numEdges;
 			assert(fscanf(file, "%i %i %i", &numVertices, &numTriangles, &numEdges) > 0);
 			assert(numVertices >= 3);
-			vertices = new Vertex[numVertices];
-			triangles = new Triangle[numTriangles + 1];
+			vertices = new Vertex[numVertices+3];// HACK reserve slots for ground plane
+			triangles = new Triangle[numTriangles + 1];// HACK reserve slot for ground plane
+
 			float x,y,z;
 			for(int i=0 ; i <numVertices; i++){
 				assert(fscanf(file, "%f %f %f",&x, &y, &z) > 0);
