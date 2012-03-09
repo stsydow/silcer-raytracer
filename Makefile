@@ -1,5 +1,5 @@
-# Copyright (c) 2011, Sebastian Koch <seb@cs.tu-berlin.de> and
-#		      Stefan Sydow <stsydow@cs.tu-berlin.de>
+# Copyright (c) 2011i-2012, Sebastian Koch <seb at cs.tu-berlin.de> and
+#		      Stefan Sydow <stsydow at cs.tu-berlin.de>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without modification,
@@ -27,12 +27,12 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
 
-OPTIMIZE = -march=core2 -msse4 -mcx16 -mpopcnt -msahf -O0
+OPTIMIZE = -march=core2 -msse4 -mcx16 -mpopcnt -msahf -O0 -g
 LIBS      = -lSDLmain -lSDL -lGL -lGLU -lfreetype
 INC       = -I/usr/include/freetype2 
 #GPROF     = -pg
-CFLAGS	  = -g ${GPROF} -Wall -Wextra -Wno-packed-bitfield-compat ${OPTIMIZE} -pipe ${INC}
-LDFLAGS	  = -g ${GPROF} -Wall -Wextra  ${OPTIMIZE} -pipe ${LIBS}
+CFLAGS	  = ${GPROF} -Wall -Wextra -Wno-packed-bitfield-compat ${OPTIMIZE} -pipe ${INC}
+LDFLAGS	  = ${GPROF} -Wall -Wextra  ${OPTIMIZE} -pipe ${LIBS}
 CPP_SRCS  = main.cpp 
 OBJ	  = ${CPP_SRCS:.cpp=.o}
 SUBDIRS   = Data Graphics

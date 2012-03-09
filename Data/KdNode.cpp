@@ -261,8 +261,6 @@ bool KdNode::intersect(Ray &ray, double &near_, double &far_){
 		if(t1 > near_) near_ = t1;
 		if(t2 < far_) far_ = t2;
 	}
-	far_;
-	near_;
 	return true;
 }
 

@@ -76,6 +76,16 @@ public:
 			printf(" closed");
 	}
 
+	inline std::list<Coordinate>::const_iterator begin() const {
+		return points.begin();
+	}
+	inline std::list<Coordinate>::const_iterator end() const {
+		return points.end();
+	}
+	inline bool is_closed() const{
+		return isClosed;
+	}
+
 	Coordinate max, min;
 private:
 	std::list<Coordinate> points;

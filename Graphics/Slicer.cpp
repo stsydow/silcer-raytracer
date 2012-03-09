@@ -21,7 +21,7 @@ Slicer::Slicer(OffModel &model) :
 	kdTree = new KdNode(triangles, model.numTriangles);
 
 	sliceing_plane.normal[1] = 1;
-	sliceing_plane.originDist = 0.1;
+	sliceing_plane.originDist = kdTree->get_min()[1];
 	scaffold_plane[0].normal[0] = 1;
 	scaffold_plane[1].normal[2] = 1;
 }
@@ -60,6 +60,7 @@ bool Slicer::slice() {
 
 			Triangle &t = **set_iter;
 			sliceing_plane.intersect(t,c1,c2);
+
 			bool inserted = false;
 			for(std::list<Contour>::iterator set_iter = contour_set.begin();set_iter != contour_set.end(); set_iter++){
 			    inserted = set_iter->insert(c1,c2);
@@ -138,23 +139,6 @@ void Slicer::generate_support() {
 	    }
 	}
 
-	for(int i = 0; i < 3; i++){
-	    v = (*iter)->v[i];
-	    if(base_vertices.find(v) == base_vertices.end()){
-		base_sense.length = DOUBLEMAX;
-		base_sense.origin = v->position;
-		hit = kdTree->traverse(base_sense);
-		if (hit){
-		    base_vertices.insert(pair<Vertex*, Coordinate>(v, base_sense.hitpoint));
-		    if(len_max < base_sense.length){
-			len_max = base_sense.length;
-		    }
-		}else{
-		    double dist = (sliceing_plane.normal * v->position.toVector()); //- sliceing_plane.originDist;
-		    base_vertices.insert(pair<Vertex*, Coordinate>(v, (v->position - sliceing_plane.normal * dist)));
-		}
-	    }
-	}
 	if(matches.size() == 1){
 	    (*matches.begin())->insert(*iter);
 	}else if(matches.size() > 1){
@@ -172,6 +156,26 @@ void Slicer::generate_support() {
 	    c->insert(*iter);
 	    support_components.insert(c);
 	}
+
+	/*
+	for(int i = 0; i < 3; i++){
+	    v = (*iter)->v[i];
+	    if(base_vertices.find(v) == base_vertices.end()){
+		base_sense.length = DOUBLEMAX;
+		base_sense.origin = v->position;
+		hit = kdTree->traverse(base_sense);
+		if (hit){
+		    base_vertices.insert(pair<Vertex*, Coordinate>(v, base_sense.hitpoint));
+		    if(len_max < base_sense.length){
+			len_max = base_sense.length;
+		    }
+		}else{
+		    double dist = (sliceing_plane.normal * v->position.toVector()) - sliceing_plane.originDist;
+		    base_vertices.insert(pair<Vertex*, Coordinate>(v, (v->position - sliceing_plane.normal * dist)));
+		}
+	    }
+	}
+	*/
     }
 
     for (ComponentSet::iterator component_iter = support_components.begin();
@@ -187,6 +191,24 @@ void Slicer::generate_support() {
 		assert(t);
 		if( (*component_iter)->find(t) == (*component_iter)->end() ){
 		    contour_edges.insert(pair<Vertex*, Vertex*>(cur_t->v[i],cur_t->v[(i+1)%3]));
+
+#if 1
+		    Vertex *v = cur_t->v[i];
+		    if(base_vertices.find(v) == base_vertices.end()){
+			base_sense.length = DOUBLEMAX;
+			base_sense.origin = v->position;
+			hit = kdTree->traverse(base_sense);
+			if (hit){
+			    base_vertices.insert(pair<const Vertex*, Coordinate>(v, base_sense.hitpoint));
+			    if(len_max < base_sense.length){
+				len_max = base_sense.length;
+			    }
+			}else{
+			    double dist = (sliceing_plane.normal * v->position.toVector()) - sliceing_plane.originDist;
+			    base_vertices.insert(pair<const Vertex*, Coordinate>(v, (v->position - sliceing_plane.normal * dist)));
+			}
+		    }
+#endif
 		}
 	    }
 	}
@@ -287,20 +309,41 @@ void Slicer::draw() {
 	}
     }
     glEnable(GL_DEPTH_TEST);
-    /*
+
+    glEnable(GL_LIGHTING);
+#if 1
     srand(32);
+    //glDisable(GL_DEPTH_TEST);
     for (std::list<Contour>::const_iterator set_iter = support_contour_set.begin();
 	    set_iter != support_contour_set.end(); set_iter++) {
-	set_iter->draw();
+	//set_iter->draw();
+	glBegin(GL_TRIANGLE_STRIP);
+	glColorLCh(90,100, 2*PI*((rand() % 100) / 100.0));
+	map<const Vertex*,Coordinate>::const_iterator _b;
+	for (std::list<Coordinate>::const_iterator iter = set_iter->begin();
+		iter != set_iter->end(); iter++) {
+	    glVertex3dv(*iter);
+	    _b = base_vertices.find(iter->v());
+	    assert(_b != base_vertices.end());
+	    glVertex3dv(_b->second);
+	}
+	if(set_iter->is_closed()){
+	    glVertex3dv(*set_iter->begin());
+	    _b = base_vertices.find(set_iter->begin()->v());
+	    assert(_b != base_vertices.end());
+	    glVertex3dv(_b->second);
+	}
+	glEnd();
     }
-    */
+    //glEnable(GL_DEPTH_TEST);
+#endif
+
     if(sliceing_plane.originDist < 0.7){
 	sliceing_plane.originDist += 0.003;
     }else{
 	sliceing_plane.originDist = 0.0;
     }
-    glEnable(GL_LIGHTING);
-#if 1
+#if 0
     glBegin(GL_TRIANGLES);
     glColor4f(1.0f,0.0f,0.0f,0.4f);
 
@@ -322,30 +365,11 @@ void Slicer::draw() {
     }
     glEnd();
 #endif
-    /*
-    glBegin(GL_LINES);
-    for (std::list<Triangle*>::const_iterator iter = support_triangles.begin();
-	    iter != support_triangles.end(); iter++){
-	
-	for(int i = 0; i < 3; i++){
-	    v = (*iter)->v[i];
 
-	    double len = support_vertices.find(v)->second / len_max;
-	    double h = 1.75 * 2 * PI;
-	    if (len >= 0){
-		h = (1.75 - len) * 2 * PI;
-	    }
-	    glColorLCh(90,100,h);
-	    glNormal3dv(v->normal);
-	    glVertex3dv(v->position);
-	}
-    }
-    glEnd();
-    */
 #if 0
     glBegin(GL_LINES);
-    for(map<Vertex*,Coordinate>::const_iterator v_iter = base_vertices.begin(); v_iter != base_vertices.end(); v_iter++){
-	double len = support_vertices.find(v)->second / len_max;
+    for(map<const Vertex*,Coordinate>::const_iterator v_iter = base_vertices.begin(); v_iter != base_vertices.end(); v_iter++){
+	double len = (v_iter->first->position - v_iter->second).abs();
 	double h = 1.75 * 2 * PI;
 	if (len >= 0){
 	    h = (1.75 - len) * 2 * PI;

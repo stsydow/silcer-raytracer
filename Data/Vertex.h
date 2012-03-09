@@ -21,6 +21,24 @@ public:
 	virtual ~Vertex();
 
 	void calculateNormal();
+	inline double distance(const Coordinate& value) const{
+		return position.distance(value);
+	}
+	inline double distance(const Vertex& value) const{
+		return position.distance(value.position);
+	}
+	Vertex& operator=(const Vertex& value){
+		position = value.position;
+		position.v(this);
+		normal = value.normal;
+		faceNormals = value.faceNormals;
+		faces = value.faces;
+		textureCoord[0] = value.textureCoord[0];
+		textureCoord[1] = value.textureCoord[1];
+		id = value.id;
+		return *this;
+	}
+
 
 	Coordinate position;
 	Vector normal;
