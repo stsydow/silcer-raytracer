@@ -19,8 +19,8 @@ typedef std::list<Triangle*> TriangleList;
 class KdNode:
 	public Drawable{
 public:
-	KdNode(int level);
-	KdNode(const TriangleList &triangles, int size);
+	KdNode(int level = 0);
+	KdNode(const TriangleList &triangles, int size = -1);
 	virtual ~KdNode();
 	void split();
 	bool intersect(Ray &ray, double &near_, double &far_);

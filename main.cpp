@@ -218,7 +218,7 @@ int dataPainter(__attribute__((unused)) void *p)
 		tracer = new RayTracer(model);
 		slicer = new Slicer(model);
 		canvas.add(&modelView);
-		modelView.addObj(&model);
+		//modelView.addObj(&model);
 		modelView.addObj(&tracer->camera);
 		Display.drawEverything();
 		modelView.addObj(slicer);

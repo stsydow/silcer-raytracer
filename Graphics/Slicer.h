@@ -31,11 +31,13 @@ public:
 	OffModel &model;
 	KdNode *kdTree;
 	Plane sliceing_plane, scaffold_plane[2];
-	std::list<Triangle*> support_triangles;
+	TriangleList support_triangles;
 	std::list<Contour> contour_set, support_contour_set;
 	std::map<Vertex*, double> support_vertices;
-	std::map<const Vertex*, Coordinate> base_vertices;
+	std::map<const Vertex*, Vertex> base_vertices;
 	ComponentSet support_components;
+	TriangleList support_mesh_triangles;
+	KdNode *support_kdTree;
 };
 
 #endif /* SLICER_H_ */

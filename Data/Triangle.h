@@ -14,7 +14,7 @@
 class Triangle {
 public:
 	Triangle();
-	Triangle(Vertex* v0, Vertex* v1, Vertex* v2, int id, Triangle* store);
+	Triangle(Vertex* v0, Vertex* v1, Vertex* v2, int id = -1, Triangle* store = NULL);
 	virtual ~Triangle();
 	void computeNormal();
 	Triangle* neighbours[3];

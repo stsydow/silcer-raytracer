@@ -7,12 +7,6 @@
 
 #include "Vertex.h"
 
-Vertex::Vertex():
-	id(-1){}
-Vertex::Vertex(float xi, float yi, float zi) : position(xi, yi, zi), id(-1){}
-Vertex::Vertex(float xi, float yi, float zi, int id) : position(xi, yi, zi), id(id){position.v(this);}
-Vertex::~Vertex() {position.v(this);}
-
 void Vertex::calculateNormal(){
 	normal.zero();
 	std::list<Vector>::iterator it = faceNormals.begin();

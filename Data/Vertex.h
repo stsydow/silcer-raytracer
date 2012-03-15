@@ -15,10 +15,16 @@
 class Triangle;
 class Vertex {
 public:
-	Vertex();
-	Vertex(float xi, float yi, float zi);
-	Vertex(float xi, float yi, float zi, int id);
-	virtual ~Vertex();
+	inline Vertex(){position.v(this);}
+	inline Vertex(float xi, float yi, float zi) :
+	    position(xi, yi, zi), id(-1){}
+
+	inline Vertex(float xi, float yi, float zi, int id) :
+	    position(xi, yi, zi), id(id){position.v(this);}
+
+	inline Vertex(const Coordinate &pos, int id) : 
+	    position(pos), id(id){position.v(this);}
+	virtual inline ~Vertex(){}
 
 	void calculateNormal();
 	inline double distance(const Coordinate& value) const{

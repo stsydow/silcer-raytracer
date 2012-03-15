@@ -39,6 +39,10 @@ KdNode::KdNode(const TriangleList &triangles, int size):
 	search_min(-DOUBLEMAX,-DOUBLEMAX,-DOUBLEMAX), // don't zero it: split will uses intesect()
 	search_max(DOUBLEMAX,DOUBLEMAX,DOUBLEMAX)
 {
+ 	if(size < 0){
+	    this->size = triangles.size();
+	    this->size_unique = this->size;
+	}
 	items = triangles;
 	split();
 }
