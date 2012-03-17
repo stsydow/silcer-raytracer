@@ -21,13 +21,15 @@ int Plane::intersect(const Triangle &T)
 {
     float dist[3];
     dist[0] = originDist - (normal*T.v[0]->position.toVector());
-    if (fabs(T.faceNormal*normal) < EPSILON) {     // Plane is parallel to triangle plane
-        if (dist[0] < EPSILON)                // Plane lies in triangle plane
+    if (T.faceNormal.times(normal).abs() < EPSILON) {     // Plane is parallel to triangle plane
+        if (fabs(dist[0]) < EPSILON)                // Plane lies in triangle plane
             return 2;
-        else return 0;             // Plane disjoint from plane
+        else{
+	    return 0;             // Plane disjoint from plane
+	}
     }else{
-    	dist[1] = originDist - (normal*T.v[1]->position.toVector());
-    	dist[2] = originDist - (normal*T.v[2]->position.toVector());
+	dist[1] = originDist - (normal*T.v[1]->position.toVector());
+	dist[2] = originDist - (normal*T.v[2]->position.toVector());
     	if((dist[0] > 0) == (dist[1] > 0) && (dist[1] > 0) == (dist[2] > 0)){
     		return 0;
     	}else{

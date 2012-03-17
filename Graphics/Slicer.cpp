@@ -50,15 +50,29 @@ bool Slicer::slice() {
 
 	std::set<Triangle*> intersection_set;
 	srand(42);
+	glEnable(GL_DEPTH_TEST);
 	bool result = support_kdTree->traverse(sliceing_plane, intersection_set);
+	if(kdTree->traverse(sliceing_plane, intersection_set)){
+	    result = true;
+	};
+	//support_kdTree->draw();
 	if (result) {
 		contour_set.clear();
 		Coordinate c1,c2;
 		int i = 0;
+		//glDisable(GL_DEPTH_TEST);
+		//glEnable(GL_DEPTH_TEST);
+		//glColor4f(1,0,0,0.7);
+		//glBegin(GL_TRIANGLES);
 		for (std::set<Triangle*>::const_iterator set_iter = intersection_set.begin();
 			set_iter != intersection_set.end(); set_iter++) {
 
 			Triangle &t = **set_iter;
+
+			//glVertex3dv(t.v[0]->position);
+			//glVertex3dv(t.v[1]->position);
+			//glVertex3dv(t.v[2]->position);
+
 			sliceing_plane.intersect(t,c1,c2);
 
 			bool inserted = false;
@@ -79,6 +93,7 @@ bool Slicer::slice() {
 			    i++;
 			}
 		}
+		//glEnd();
 		merge_contours(contour_set);
 	}
 	return result;
@@ -185,8 +200,8 @@ void Slicer::generate_support() {
 		cur_triangle[i] = &_b->second;
 	    }
 	}
-	support_mesh_triangles.push_back(new Triangle(cur_triangle[1], cur_triangle[0], cur_triangle[2]));
-	support_mesh_triangles.push_back(*iter);
+	support_mesh_triangles.push_back(new Triangle(cur_triangle[0], cur_triangle[1], cur_triangle[2]));
+	support_mesh_triangles.push_back(new Triangle((*iter)->v[1],(*iter)->v[0],(*iter)->v[2]));
     }
 
     for (ComponentSet::iterator component_iter = support_components.begin();
@@ -261,7 +276,8 @@ void Slicer::draw() {
     srand(958);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LIGHTING);
-    glColorLCh(90,100, 2*PI*((rand() % 100) / 100.0));
+    //glColorLCh(90,100, 2*PI*((rand() % 100) / 100.0));
+    glColor4f(1,1,1,0.7);
     glBegin(GL_TRIANGLES);
     Vertex * v;
     for (TriangleList::const_iterator iter = support_mesh_triangles.begin();
@@ -280,8 +296,24 @@ void Slicer::draw() {
 
     }
     glEnd();
-    glDisable(GL_DEPTH_TEST);
     glDisable(GL_LIGHTING);
+#if 0
+    glColor4f(1,0,0,0.5);
+    glBegin(GL_LINES);
+    for (TriangleList::const_iterator iter = support_mesh_triangles.begin();
+	    iter != support_mesh_triangles.end(); iter++) {
+	Vertex **verts = (*iter)->v;
+	Vector p = (
+		verts[0]->position.toVector() 
+		+ verts[1]->position.toVector() 
+		+ verts[2]->position.toVector()
+	) * 0.333;
+	glVertex3dv(p);
+	glVertex3dv(p + (*iter)->faceNormal*0.01 );
+    }
+    glEnd();
+#endif
+    glDisable(GL_DEPTH_TEST);
 
     slice();
     srand(42);
