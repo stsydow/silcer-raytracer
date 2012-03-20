@@ -20,7 +20,8 @@ class KdNode:
 	public Drawable{
 public:
 	KdNode(int level = 0);
-	KdNode(const TriangleList &triangles, int size = -1);
+	KdNode(Triangle *triangles, int size);
+	KdNode(TriangleList &triangles);
 	virtual ~KdNode();
 	void split();
 	bool intersect(Ray &ray, double &near_, double &far_);

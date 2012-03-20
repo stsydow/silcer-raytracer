@@ -26,7 +26,6 @@ Perspective *view;
 char messageBuffer[100];
 char *messageBufferEnd = messageBuffer;
 RayTracer *tracer;
-Slicer *slicer;
 bool resetView;
 bool do_render = false;
 
@@ -216,12 +215,12 @@ int dataPainter(__attribute__((unused)) void *p)
 #endif
 
 		tracer = new RayTracer(model);
-		slicer = new Slicer(model);
+		Slicer slicer(&model);
 		canvas.add(&modelView);
 		modelView.addObj(&model);
 		modelView.addObj(&tracer->camera);
 		Display.drawEverything();
-		modelView.addObj(slicer);
+		modelView.addObj(&slicer);
 		Display.drawEverything();
 		//modelView.addObj(tracer->kdTree);
 		//Display.drawEverything();

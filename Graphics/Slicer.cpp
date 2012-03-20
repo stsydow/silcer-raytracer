@@ -12,13 +12,13 @@
 #include <map>
 #include "assert.h"
 
-Slicer::Slicer(OffModel &model) :
-		model(model),kdTree(NULL), support_kdTree(NULL) {
-	TriangleList triangles;
-	for (int i = 0; i < model.numTriangles; i++) {
-		triangles.push_back(model.triangles + i);
-	}
-	kdTree = new KdNode(triangles, model.numTriangles);
+Slicer::Slicer(OffModel *model) :
+		init(false),
+    		model(model),
+		kdTree(NULL), 
+		support_kdTree(NULL) {
+
+	kdTree = new KdNode(model->triangles, model->numTriangles);
 
 	sliceing_plane.normal[1] = 1;
 	sliceing_plane.originDist = kdTree->get_min()[1];
@@ -52,7 +52,7 @@ void merge_contours(std::list<Contour> &contour_set) {
 bool Slicer::slice() {
 
 	std::set<Triangle*> intersection_set;
-	bool result = false;//support_kdTree->traverse(sliceing_plane, intersection_set);
+	bool result = support_kdTree->traverse(sliceing_plane, intersection_set);
 	if(kdTree->traverse(sliceing_plane, intersection_set)){
 	    result = true;
 	}
@@ -93,18 +93,38 @@ bool Slicer::slice() {
 void Slicer::generate_support() {
 
     Vector down(0,-1,0);
-    for (int i = 0; i < model.numTriangles;  i++) {
-	Triangle &t = model.triangles[i];
+    for (int i = 0; i < model->numTriangles;  i++) {
+	Triangle &t = model->triangles[i];
 	if(t.faceNormal*down > 0.7){
 	    support_triangles.push_back(&t);
 	}
     }
+    Coordinate v_min = Coordinate(kdTree->get_min());
+    Coordinate v_max = Coordinate(kdTree->get_max());
+    Ray weight_sense;
+    bool hit;
 
+    weight_sense.setDirection(sliceing_plane.normal);
+    Vector ds =  (v_max - v_min)*(1.0/SAMPLE_COUNT);
+    for(int i=0; i < SAMPLE_COUNT; i++)
+	for(int j=0; j < SAMPLE_COUNT; j++){
+	    weight_sense.origin = Coordinate(v_min[0]+ i*ds[0], v_min[1] , v_min[2]+ j*ds[2]);
+	    weight_sense.length = DOUBLEMAX;
+	    double length = 0;
+	    bool inner = false;
+	    while(kdTree->traverse(weight_sense, inner)){
+		length += weight_sense.length;
+	    	weight_sense.length = DOUBLEMAX;
+	    	weight_sense.origin = weight_sense.hitpoint;
+		inner = !inner;
+	    }
+	    weights[i+j*SAMPLE_COUNT] = length;
+	}
+	
     Ray base_sense;
     base_sense.setDirection(-sliceing_plane.normal);
     int base_vertex_count = base_vertices.size();
     Vertex * cur_triangle[3];
-    bool hit;
     len_max = 0.0;
     for (std::list<Triangle*>::const_iterator iter = support_triangles.begin();
 	    iter != support_triangles.end(); iter++){
@@ -240,8 +260,9 @@ bool sort_z(const Coordinate &a, const Coordinate &b){
 }
 
 void Slicer::draw() {
-    if(!support_kdTree){
+    if(!init){
     	generate_support();
+    	init = true;
     }
     Vertex * v;
 #if 0 //show support mesh
@@ -315,7 +336,14 @@ void Slicer::draw() {
 	double dist_span = p.normal* (v_max - v_min);
 	glColorLCh(90,100, 2*PI*((rand() % 100) / 100.0));
 	glDisable(GL_DEPTH_TEST);
+
 	for(int i = 0; i < 100; i++){
+	    float _test = 0;
+	    for(int j = 0; j < SAMPLE_COUNT; j++){
+		_test += weights[(i*SAMPLE_COUNT)/100+j*SAMPLE_COUNT];
+	    }
+	    printf("%f\n",_test / SAMPLE_COUNT);
+
 	    p.originDist =  start_dist + dist_span*((i+0.5)/100.0);
 	    bool hit = false;
 	    for (std::list<Contour>::const_iterator set_iter = contour_set.begin();

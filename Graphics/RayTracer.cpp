@@ -17,18 +17,13 @@ RayTracer::RayTracer(OffModel &model):
 	kdTree(NULL),
 	running(false)
 {
-	TriangleList triangles;
-	for(int i =0 ; i <  model.numTriangles; i++){
-		triangles.push_back(model.triangles + i);
-	}
-
     image = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32,
     #if SDL_BYTEORDER == SDL_BIG_ENDIAN
         0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
     #else
         0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
     #endif
-	kdTree = new KdNode(triangles, model.numTriangles);
+	kdTree = new KdNode(model.triangles, model.numTriangles);
 }
 
 RayTracer::~RayTracer() {

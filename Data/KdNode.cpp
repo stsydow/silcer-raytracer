@@ -20,13 +20,13 @@ KdNode::KdNode(int level):
 	right(NULL),
 	split_min(-DOUBLEMAX,-DOUBLEMAX,-DOUBLEMAX),
 	split_max(DOUBLEMAX,DOUBLEMAX,DOUBLEMAX),
-	real_min(0,0,0),
-	real_max(0,0,0),
+	real_min(NAN,NAN,NAN),
+	real_max(NAN,NAN,NAN),
 	search_min(-DOUBLEMAX,-DOUBLEMAX,-DOUBLEMAX), // don't zero it: split will uses intesect()
 	search_max(DOUBLEMAX,DOUBLEMAX,DOUBLEMAX) 
 {}
 
-KdNode::KdNode(const TriangleList &triangles, int size):
+KdNode::KdNode(Triangle* triangles, int size):
 	level(0),
 	size(size),
 	size_unique(size),
@@ -34,23 +34,37 @@ KdNode::KdNode(const TriangleList &triangles, int size):
 	right(NULL),
 	split_min(-DOUBLEMAX,-DOUBLEMAX,-DOUBLEMAX),
 	split_max(DOUBLEMAX,DOUBLEMAX,DOUBLEMAX),
-	real_min(0,0,0),
-	real_max(0,0,0),
+	real_min(NAN,NAN,NAN),
+	real_max(NAN,NAN,NAN),
 	search_min(-DOUBLEMAX,-DOUBLEMAX,-DOUBLEMAX), // don't zero it: split will uses intesect()
 	search_max(DOUBLEMAX,DOUBLEMAX,DOUBLEMAX)
 {
- 	if(size < 0){
-	    this->size = triangles.size();
-	    this->size_unique = this->size;
+ 	assert(size >= 0);
+	for (int i = 0; i < size; i++) {
+		items.push_back(triangles + i);
 	}
-	items = triangles;
 	split();
 }
 
+KdNode::KdNode(TriangleList &triangles):
+	level(0),
+	size(triangles.size()),
+	size_unique(size),
+	left(NULL),
+	right(NULL),
+	split_min(-DOUBLEMAX,-DOUBLEMAX,-DOUBLEMAX),
+	split_max(DOUBLEMAX,DOUBLEMAX,DOUBLEMAX),
+	real_min(NAN,NAN,NAN),
+	real_max(NAN,NAN,NAN),
+	search_min(-DOUBLEMAX,-DOUBLEMAX,-DOUBLEMAX), // don't zero it: split will uses intesect()
+	search_max(DOUBLEMAX,DOUBLEMAX,DOUBLEMAX)
+{
+	items = triangles;
+	split();
+}
 KdNode::~KdNode() {
 	if(left) delete left;
 	if(right) delete right;
-	// TODO delete items
 }
 
 void KdNode::computeSplit(const TriangleList &triangles, int size){
@@ -246,8 +260,6 @@ bool KdNode::intersect(Triangle &t){
 
 bool KdNode::intersect(Ray &ray, double &near_, double &far_){
 
-	near_ = 0;
-	far_ = DOUBLEMAX;
 	double t1;
 	double t2;
 
@@ -271,7 +283,7 @@ bool KdNode::intersect(Ray &ray, double &near_, double &far_){
 bool KdNode::traverse(Ray &ray, bool inner){
 	bool result = false;
 	if(left){
-		double leftNear, leftFar,rightNear,rightFar;
+		double leftNear = 0, leftFar = DOUBLEMAX,rightNear = 0,rightFar = DOUBLEMAX;
 		bool match_left = left->intersect(ray, leftNear, leftFar);
 		bool match_right = right->intersect(ray, rightNear, rightFar);
 

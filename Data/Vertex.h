@@ -15,9 +15,11 @@
 class Triangle;
 class Vertex {
 public:
-	inline Vertex(){position.v(this);}
+	inline Vertex():
+	    position(NAN, NAN, NAN),
+	    id(-1){position.v(this);}
 	inline Vertex(float xi, float yi, float zi) :
-	    position(xi, yi, zi), id(-1){}
+	    position(xi, yi, zi), id(-1){position.v(this);}
 
 	inline Vertex(float xi, float yi, float zi, int id) :
 	    position(xi, yi, zi), id(id){position.v(this);}

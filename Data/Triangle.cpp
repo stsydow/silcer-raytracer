@@ -9,7 +9,10 @@
 #include "assert.h"
 
 Triangle::Triangle():
-id(-1) {}
+    min(NAN,NAN,NAN),
+    max(NAN,NAN,NAN),
+    id(-1) {
+}
 
 Triangle::Triangle(Vertex* v0, Vertex* v1, Vertex* v2, int id, Triangle* store):
 	id(id)
@@ -18,6 +21,20 @@ Triangle::Triangle(Vertex* v0, Vertex* v1, Vertex* v2, int id, Triangle* store):
 	v[1]=v1;
 	v[2]=v2;
 	computeNormal();
+	for(int i = 0; i < 3; i++){
+
+		if(v[0]->position[i]<v[1]->position[i]){
+			min[i] = v[0]->position[i];
+			max[i] = v[1]->position[i];
+		}else{
+			min[i] = v[1]->position[i];
+			max[i] = v[0]->position[i];
+		}
+
+		if(min[i] > v[2]->position[i]) min[i] = v[2]->position[i];
+		if(max[i] < v[2]->position[i]) max[i] = v[2]->position[i];
+	}
+
 	if(store){
 	    for(int i = 0; i < 3; i++){
 		neighbours[i] = NULL;
@@ -49,19 +66,6 @@ void Triangle::computeNormal(){
 	center = v[0]->position + (a + b)*0.25;
 	faceNormal = a.times(b).normalize();
 
-	for(int i = 0; i < 3; i++){
-
-		if(v[0]->position[i]<v[1]->position[i]){
-			min[i] = v[0]->position[i];
-			max[i] = v[1]->position[i];
-		}else{
-			min[i] = v[1]->position[i];
-			max[i] = v[0]->position[i];
-		}
-
-		if(min[i] > v[2]->position[i]) min[i] = v[2]->position[i];
-		if(max[i] < v[2]->position[i]) max[i] = v[2]->position[i];
-	}
 }
 
 Triangle& Triangle::operator=(const Triangle& value){
