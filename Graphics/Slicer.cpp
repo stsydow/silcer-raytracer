@@ -314,8 +314,14 @@ void Slicer::draw() {
     }
 
     std::list<Coordinate> intersections;
-    Coordinate v_max = Coordinate(kdTree->get_min());
-    Coordinate v_min = Coordinate(kdTree->get_max());
+    Coordinate v_min = Coordinate(kdTree->get_min());
+    Coordinate v_max = Coordinate(kdTree->get_max());
+    Vertex corners[] = {
+	Vertex(v_min[0],0,v_min[2]),Vertex(v_max[0],0,v_min[2]),
+	Vertex(v_max[0],0,v_max[2]),Vertex(v_min[0],0,v_max[2])};
+    Triangle ground_a(&corners[0],&corners[1],&corners[2]);
+    Triangle ground_b(&corners[0],&corners[3],&corners[2]);
+    Vector ds = v_max - v_min;
     for(int plane_idx = 0; plane_idx < 3; plane_idx++){
 	Plane &p = scaffold_plane[plane_idx];
 	bool (*_sort)(const Coordinate& ,const Coordinate&);
@@ -326,25 +332,22 @@ void Slicer::draw() {
 	}
 
 	for(int i = 0; i < 3; i++){
-	    if(p.normal[i] >= 0){
+	    if(p.normal[i] < 0){
 		double tmp = v_max[i];
 		v_max[i] = v_min[i];
 		v_min[i] = tmp;
 	    }
 	}
 	double start_dist = p.normal* v_min.toVector();
-	double dist_span = p.normal* (v_max - v_min);
+	double end_dist = p.normal* v_max.toVector();
+	double ds =  p.normal* (v_max - v_min)* (1.0/100);
+	p.originDist =  start_dist + ds*0.2;
+
 	glColorLCh(90,100, 2*PI*((rand() % 100) / 100.0));
 	glDisable(GL_DEPTH_TEST);
 
-	for(int i = 0; i < 100; i++){
-	    float _test = 0;
-	    for(int j = 0; j < SAMPLE_COUNT; j++){
-		_test += weights[(i*SAMPLE_COUNT)/100+j*SAMPLE_COUNT];
-	    }
-	    printf("%f\n",_test / SAMPLE_COUNT);
+	while(p.originDist < end_dist){
 
-	    p.originDist =  start_dist + dist_span*((i+0.5)/100.0);
 	    bool hit = false;
 	    for (std::list<Contour>::const_iterator set_iter = contour_set.begin();
 		    set_iter != contour_set.end(); set_iter++) {
@@ -362,6 +365,37 @@ void Slicer::draw() {
 		glEnd();
 	    }
 	    intersections.clear();
+
+	    Coordinate c1, c2;
+	    if(p.intersect(ground_a)){
+		p.intersect(ground_a, c1, c2);
+	    }else if(p.intersect(ground_b)){
+		p.intersect(ground_b, c1, c2);
+	    }else{
+	    	assert(false);
+	    }
+	    Vector dline = c2 - c1;
+	    double avg_height = 0;
+	    Ray weight_sense;
+	    weight_sense.setDirection(sliceing_plane.normal);
+	    for(int j = 0; j < SAMPLE_COUNT; j++){
+		weight_sense.origin = c1 + dline * ((j+0.5)/SAMPLE_COUNT);
+	    	weight_sense.length = DOUBLEMAX;
+	    	double height = 0;
+		bool inner = false;
+		while(kdTree->traverse(weight_sense, inner)){
+		    height += weight_sense.length;
+		    weight_sense.length = DOUBLEMAX;
+		    weight_sense.origin = weight_sense.hitpoint;
+		    inner = !inner;
+		}
+		avg_height += height;
+	    }
+	    avg_height /= SAMPLE_COUNT;
+	    double step = (1 -avg_height);
+	    if(step < 0.2){ step = 0.2;}
+	    if(step > 1){ step = 1;}
+	    p.originDist += ds* step;
 	}
     }
     glEnable(GL_DEPTH_TEST);

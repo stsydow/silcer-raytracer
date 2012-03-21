@@ -42,27 +42,27 @@ void Plane::intersect(const Triangle &T, Coordinate &I1, Coordinate &I2)
 {
     double dist[3];
     for(int i = 0; i < 3; i++)
-    	dist[i] = originDist - (normal*T.v[i]->position.toVector());
+	dist[i] = originDist - (normal*T.v[i]->position.toVector());
 
-	int single_idx = 0;
-	if((dist[0] > 0) == (dist[1] > 0)){
-		assert(!(dist[1] > 0) == (dist[2] > 0));
-		single_idx = 2;
-	}else{
-		if((dist[0] > 0) == (dist[2] > 0)){
-			single_idx = 1;
-		}/* IMPICIT
-		else{
-			single_idx = 0;
-		}
-		*/
-	}
-	Coordinate &v1 = T.v[single_idx]->position;
-	Coordinate &v2 = T.v[(single_idx + 1)%3]->position;
-	Coordinate &v3 = T.v[(single_idx + 2)%3]->position;
+    int single_idx = 0;
+    if((dist[0] > 0) == (dist[1] > 0)){
+	assert(!(dist[1] > 0) == (dist[2] > 0));
+	single_idx = 2;
+    }else{
+	if((dist[0] > 0) == (dist[2] > 0)){
+	    single_idx = 1;
+	}/* IMPICIT
+	    else{
+	    single_idx = 0;
+	    }
+	    */
+    }
+    Coordinate &v1 = T.v[single_idx]->position;
+    Coordinate &v2 = T.v[(single_idx + 1)%3]->position;
+    Coordinate &v3 = T.v[(single_idx + 2)%3]->position;
 
-	double &d1 = dist[single_idx];
-	I1 = v1 + (v2 -v1)*(d1/(d1 - dist[(single_idx +1)%3]));
-	I2 = v1 + (v3 -v1)*(d1/(d1 - dist[(single_idx +2)%3]));
+    double &d1 = dist[single_idx];
+    I1 = v1 + (v2 -v1)*(d1/(d1 - dist[(single_idx +1)%3]));
+    I2 = v1 + (v3 -v1)*(d1/(d1 - dist[(single_idx +2)%3]));
 
 }
