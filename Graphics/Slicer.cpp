@@ -265,10 +265,10 @@ void Slicer::draw() {
     	init = true;
     }
     Vertex * v;
-#if 0 //show support mesh
+#if 1 //show support mesh
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LIGHTING);
-    glColor4f(1,1,1,0.7);
+    glColor4f(0.7,0.7,1,1);
     glBegin(GL_TRIANGLES);
     for (TriangleList::const_iterator iter = support_mesh_triangles.begin();
 	iter != support_mesh_triangles.end(); iter++) {
@@ -304,6 +304,7 @@ void Slicer::draw() {
     }
     glEnd();
 #endif
+#if 1 //slice
     glDisable(GL_DEPTH_TEST);
 
     slice();
@@ -343,7 +344,7 @@ void Slicer::draw() {
 	double ds =  p.normal* (v_max - v_min)* (1.0/100);
 	p.originDist =  start_dist + ds*0.2;
 
-	glColorLCh(90,100, 2*PI*((rand() % 100) / 100.0));
+	glColorLCh(90,100, 2*PI*0.1);
 	glDisable(GL_DEPTH_TEST);
 
 	while(p.originDist < end_dist){
@@ -406,14 +407,15 @@ void Slicer::draw() {
     }else{
 	sliceing_plane.originDist = 0.0;
     }
-#if 0 //show surface needing support
+#endif
+#if 0  //show surface needing support
     glBegin(GL_TRIANGLES);
 
     ComponentSet::const_iterator component_iter;
     srand(232);
     for (component_iter = support_components.begin();
 	    component_iter != support_components.end(); component_iter++){
-	glColorLCh(90,100, 2*PI*((rand() % 100) / 100.0));
+	glColorLCh(90,100, 2*PI*0.7);
     	for (MeshComponent::const_iterator iter = (*component_iter)->begin();
 	    iter != (*component_iter)->end(); iter++){
 	    for(int i = 0; i < 3; i++){

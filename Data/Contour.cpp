@@ -138,7 +138,7 @@ void Contour::draw() const {
     }else{
 	glBegin(GL_LINE_STRIP);
     }
-    glColorLCh(90,100, 2*PI*((rand() % 100) / 100.0));
+    glColorLCh(90,100, 2*PI*0.6);
     for (std::list<Coordinate>::const_iterator iter = points.begin();
 	    iter != points.end(); iter++) {
 	glVertex3dv(*iter);

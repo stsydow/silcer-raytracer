@@ -1,4 +1,4 @@
-# Copyright (c) 2011i-2012, Sebastian Koch <seb at cs.tu-berlin.de> and
+# Copyright (c) 2011-2012, Sebastian Koch <seb at cs.tu-berlin.de> and
 #		      Stefan Sydow <stsydow at cs.tu-berlin.de>
 # All rights reserved.
 #
@@ -43,12 +43,12 @@ DEPEXIST  = $(strip $(wildcard $(DEPFILE)))
 
 .PHONY: dep all clean
 
-all: build rayTrace
+all: build slicer
 
 %.o: %.cpp 
 	${CXX} ${CFLAGS} -c -o $@ "$<"
 
-rayTrace: main.o ${ALL_OBJ}
+slicer: main.o ${ALL_OBJ}
 	${CXX} ${LDFLAGS} -o $@ $+ -lm
 
 build:
