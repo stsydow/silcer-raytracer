@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Model Slicing and Support Structure Generation for 3d Printing</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="Stefan Sydow">
+
+    <link href="bootstrap.min.css" rel="stylesheet">
+    <style type="text/css">
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+      }
+    </style>
+    <link href="bootstrap-responsive.min.css" rel="stylesheet">
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li class="active"><a href="#intro">Introduction</a></li>
+              <li><a href="#architecture">Architecture</a></li>
+              <li><a href="#implementation">Implementation</a></li>
+              <li><a href="#results">Results</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+	<div class="page-header">
+	    <h1>Model Slicing and Support Structure Generation for 3d Printing</h1>
+	</div>
+
+	<div class="row">
+	    <section id="intro">
+	    <div class="span6">
+		<h2>Introduction</h2>
+		<p>
+		The goal of this project was to build a Software which takes a 3d mesh model and
+		produces a printable geometry for it.
+		The Printer is assumed to print the model slice by slice e.g. with a printing head which plots each
+		slice by extruding plastic.
+		So the model needs to be cut into slices before it can be printed.
+		</p>
+		<p>
+		Many models are not printable at all without further preprocessing, because of overhanging parts.
+		Most printers need a base plane to print the next slice on top of it and allow only very limited overhang.
+		To deal with that it is necessary to generate additional support structures for the overhanging parts.
+		Only printers using a powder filled printing area do not have this problem because the loose powder
+		acts as support structure.
+		</p>
+		<p>
+		The inner space of the support structure and the model need not to be filled with material,
+		because a sparse grid structure is often enough to provide stability.
+		For the sake of printing time and material use it should be as sparse as possible.
+		So the question is, how dense it needs to be to carry the weight of the model shell and the grid it self. 
+		</p>
+		<p>
+		This page consists of four sections. 
+		The first provides an overview over the tool which were considered as software base.
+		There will also be a discussion why none of them were used. 
+		The architecture of the slicer will be presented in the second section.
+		Afterwards the implementation is described in more Detail together with some images which illustrate the process.
+		As last part a short summary and discussion of the results will follow.
+		</p>
+	    </div>
+	    </section>
+	    <ul class="thumbnails">
+		<li class="span4">
+		<a href="slice.png" class="thumbnail">
+		    <img src="slice.png" alt="a slice through the model">
+		    <h5>
+		    Slice through the model.
+		    </h5>
+		</a>
+		</li>
+		<li class="span2">
+		<a href="model.png" class="thumbnail">
+		    <img src="model.png" alt="base model (Stanford Bunny)">
+		    <h5>
+		    Base model (Stanford Bunny).
+		    </h5>
+		</a>
+		</li>
+		<li class="span2">
+		<a href="kdtree.png" class="thumbnail">
+		    <img src="kdtree.png" alt="visualisation of the KD-tree">
+		    <h5>
+		    Visualisation of the KD-tree.
+		    </h5>
+		</a>
+		</li>
+	    </ul>
+	</div>
+	<div class="row">
+	    <section id="tools">
+	    <div class="span6">
+		<h2>Existing Tools</h2>
+		<p>
+		This software is based on a simple raytracer implementation written in C++.
+		The useful features of the existing raytracer where:
+		<ul>
+		    <li>Import of OFF model files.</li>
+		    <li>A simple GUI using OpenGL.</li>
+		    <li>Cross platform support by using <a href="http://www.libsdl.org/" target="blank">SDL</a>.</li>
+		    <li>Fast mesh intersection based on KD-Trees and already optimized.</li>
+		</ul>
+		There has been a lot of reading and testing whether other software tool or libraries might suit the Problem better.
+		But they were either to complex and tailored to their problem to be useful or they where not mature enough and had serious bugs or 
+		no documentation. To provide an overview the following list contains the some interesting tools in this area. 
+		</p>
+		<ul>
+		    <li>
+		    <a href="http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge" target="blank">Skeinforge</a> 
+		    is a tool chain which generates G-Code for DYI 3D-Printers like the <a href="http://www.makerbot.com/" target="blank">MakerBot</a>.
+		    It is able to generate support structure with a static fill pattern.
+		    The code is written mainly in Python. Skeinforge was not chosen as base for this Project,
+		    because the big size and complexity of the code base and for the fact that it is grown software. 
+		    </li>
+		    <li>
+		    <a href="http://sourceforge.net/apps/mediawiki/free-cad/index.php?title=Main_Page">FreeCad</a>
+		    is an OpenSource 3d-CAD Software with a good documented Python scripting interface.
+		    It seemed to be the most promising tool to build a simple slicer with a proof of concept for adaptive support structure generation.
+		    But its mesh library is broken and generates artefacts working on complex meshes.
+		    </li>
+		    <li>
+		    <a href="http://www.pythonocc.org/" target="blank">PythonOCC</a>
+		    is a wrapper around the OpenCascade CAD library. The OpenCascade CAD library is a very complex an 
+		    heavyweight piece of software which has an huge interface. The PythonOCC is automatically generated for this interface.
+		    The Problems experienced may result either from inconsistencies in that mapping or just wrong usage due to the lack of documentation.
+		    </li>
+		    <li>
+		    <a href="https://code.google.com/p/carve/" target="blank">libcarve</a> is a mesh library which also follows the paradigm that code 
+		    is documentation, Which might be OK for a small project.
+		    It supports all common mesh operations e.g. intersection, union and difference.
+		    Unfortunately the examples provided didn't work the way the where supposed, but the program crashed inside the library. 
+		    </li>
+		    <li>
+		    <a href="http://www.netfabb.com/" target="blank">netfabb</a> is a commercial tool, with a free basic version which is useful for mesh sanitizing. 
+		    </li>
+		</ul>
+		<p>
+		In the end the decision was made to start almost from the scratch, instead of spending more energy for fixing an existing tool.
+		</p>
+	    </div>
+	    </section>
+	    <section id="architecture">
+	    <div class="span6">
+		<h2>Architecture</h2>
+		<p>
+		The goal of this Project was to build a model slicer with the ability of support structure generation in a strait forward way.
+		Mainly to make later modification and extension of the algorithm easier.
+		While efficiency was only second priority. This was not a problem as the code base was already optimized for the raytracer.
+		</p>
+		<p>
+		The processes the model data in three stages to obtain printable slices from the model.
+		In the first stage the model file imported. The triangle mesh is created in memory and made accessible through a KD-tree 
+		to accelerate various kinds of geometric Intersections with the model. As next step the model is pre processed for slicing.
+		To generate support structure only in places where it is needed, triangles facing steep downwards are used to project them onto the base plane.
+		This triangles and their projection are connected to obtain the support volume.
+		In the last stage both the model and its support volume are sliced.
+		The slices are filled with a grid which has adaptive density.
+		The density depends upon the average model height on the current grid line.
+		</p>
+	    </div>
+	    </section>
+	    <section id="implementation">
+	    <div class="span6">
+		<h2>Implementation</h2>
+		<p>
+		The raytracer already had the functions to load a triangle mesh form an OFF file.
+		The triangle normals are used to calculate which triangles face so steep downward that they need support.
+		In order to obtain the support volume, the contour of this triangle set is projected downwards onto the model and the base plane.
+		The volume is bounded by the area inside the support contour and it projection plus the surface connecting both surfaces.
+		As the model the support volume is represented as triangle mesh.
+		</p>
+		<p>
+		In order to build a slicer on the base of the raytracing code,
+		intersection operations for planes with triangles and Axis Aligned Bounding Boxes (AABB) where added.
+		AABB intersection is important for efficient operations on the KD-tree. 
+		This representation is used for the model and the support volume, because it hat logarithmic effort for most operations.
+		</p>
+		<p>
+		The slice contours handle the model and the support volume in the same way.
+		Each KD-tree is intersected by the slicing plane, which results in a set of edges.
+		This edges form the slice contour. It may consist unconnected components.
+		To generate the grid inside the contours are intersected with a set of planes.
+		The intersection points are connected to the grid structure.
+		Adaptive grid density is achieved by varying the distance between the planes in that set.
+		The strategy here is to make the distance inverse proportional to the height of the model.
+		</p>
+	    </div>
+	    </section>
+	</div>
+	<div class="row">
+	    <div class="span12">
+		<ul class="thumbnails">
+		    <li class="span4">
+		    <a href="support_surface.png" class="thumbnail">
+			<img src="support_surface.png" alt="surface needing support marked in cyan">
+			<h5>
+			Surface needing support marked in cyan on the model.
+			</h5>
+		    </a>
+		    </li>
+		    <li class="span4">
+		    <a href="support_mesh.png" class="thumbnail">
+			<img src="support_mesh.png" alt="support structure">
+			<h5>
+			Volume of the support structure.
+			</h5>
+		    </a>
+		    <li class="span4">
+		    <a href="slice1.png" class="thumbnail">
+			<img src="slice1.png" alt="slice filled with an adaptive grid">
+			<h5>
+			Slice filled with an adaptive grid.
+			</h5>
+		    </a>
+		    </li>
+		</ul>
+	    </div>
+	</div>
+	<div class="row">
+	    <section id="results">
+	    <div class="span6">
+		<h2>Results</h2>
+		<p>
+		The proof of concept implementation of an model slicer provides a base for other 
+		approaches and experiments in adaptive support structure generation.
+		It implements a basic support generation method to illustrate the general idea.
+		An UV-resin 3D printer should be able to print a model using the generated slices,
+		even it there are some issues with the support volume overlapping the model a little.
+		</p>
+		<p>
+		In one talk during the seminar other approaches were presented.
+		<a href="http://www.cg.tu-berlin.de/fileadmin/fg144/Courses/11WS/rapidproto/vortrag_111116J.pdf" target="blank">(See the sides of this talk.)</a>
+		For example by using finite element methods to calculate the optimal grid structure for printed mechanical parts.
+		This seems to be the best methods to generate adaptive support structure, but it is also very computing expensive and complex.
+		</p>
+	    </div>
+	    </section>
+	</div>
+
+	<hr>
+
+	<footer>
+	<p>Stefan Sydow [stsydow at cs dot tu-berlin dot de] 2012</p>
+	</footer>
+
+    </div>
+</body>
+</html>
